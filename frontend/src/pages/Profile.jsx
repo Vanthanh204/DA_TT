@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 
 function Profile({ user: propUser }) {
+  // Ưu tiên lấy từ prop, sau đó mới đến localStorage
   const [user, setUser] = useState(propUser || JSON.parse(localStorage.getItem("user")));
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ username: "", age: 0, avatar: "" });
   const [uploading, setUploading] = useState(false);
   const [ageError, setAgeError] = useState("");
+
+  const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   useEffect(() => {
     const savedUser = propUser || JSON.parse(localStorage.getItem("user"));
@@ -22,10 +25,10 @@ function Profile({ user: propUser }) {
 
   const handleAgeChange = (val) => {
     const age = parseInt(val);
-    setEditData({ ...editData, age: val }); // Vẫn lưu val để input không bị giật
+    setEditData({ ...editData, age: val });
     
-    if (isNaN(age) || age < 5 || age > 100) {
-      setAgeError("Tuổi phải từ 5 đến 100");
+    if (isNaN(age) || age < 6 || age > 100) {
+      setAgeError("Tuổi phải từ 6 đến 100");
     } else {
       setAgeError("");
     }
@@ -44,7 +47,7 @@ function Profile({ user: propUser }) {
         headers: { "Content-Type": "multipart/form-data" }
       });
       setEditData({ ...editData, avatar: res.data.imageUrl });
-      alert("Tải ảnh lên thành công!");
+      alert("Tải ảnh lên thành công! Nhấn 'Lưu thay đổi' để hoàn tất.");
     } catch (err) {
       console.error("Lỗi upload:", err);
       alert("Lỗi khi tải ảnh lên!");
@@ -55,8 +58,8 @@ function Profile({ user: propUser }) {
 
   const handleSave = async () => {
     const ageNum = parseInt(editData.age);
-    if (isNaN(ageNum) || ageNum < 5 || ageNum > 100) {
-      setAgeError("Vui lòng nhập tuổi hợp lệ (5-100) trước khi lưu!");
+    if (isNaN(ageNum) || ageNum < 6 || ageNum > 100) {
+      setAgeError("Vui lòng nhập tuổi hợp lệ (6-100) trước khi lưu!");
       return;
     }
 
@@ -65,10 +68,14 @@ function Profile({ user: propUser }) {
         ...editData,
         age: ageNum
       });
-      setUser(res.data);
-      localStorage.setItem("user", JSON.stringify(res.data));
+      
+      const updatedUser = res.data;
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
       setIsEditing(false);
       alert("Cập nhật thành công!");
+      // Buộc load lại trang để cập nhật đồng bộ cho Navbar nếu cần
+      window.location.reload(); 
     } catch (err) {
       console.error("Lỗi cập nhật:", err);
       alert("Không thể cập nhật thông tin!");
@@ -83,7 +90,12 @@ function Profile({ user: propUser }) {
       <div style={{ background: "#fff", padding: "30px", borderRadius: "10px", boxShadow: "0 4px 15px rgba(0,0,0,0.1)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "30px" }}>
           <div style={{ position: "relative" }}>
-            <img src={isEditing ? (editData.avatar || "https://via.placeholder.com/100") : (user.avatar || "https://via.placeholder.com/100")} alt="Avatar" style={{ width: "120px", height: "120px", borderRadius: "50%", objectFit: "cover", border: "3px solid #3498db" }} />
+            <img 
+              src={isEditing ? (editData.avatar || DEFAULT_AVATAR) : (user.avatar || DEFAULT_AVATAR)} 
+              alt="Avatar" 
+              onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
+              style={{ width: "120px", height: "120px", borderRadius: "50%", objectFit: "cover", border: "3px solid #3498db" }} 
+            />
             {isEditing && (
               <label style={{ position: "absolute", bottom: "5px", right: "5px", background: "#3498db", color: "#fff", padding: "8px", borderRadius: "50%", cursor: "pointer", fontSize: "0.9rem", boxShadow: "0 2px 5px rgba(0,0,0,0.2)" }}>
                 📷
@@ -135,7 +147,7 @@ function Profile({ user: propUser }) {
 
         {isEditing ? (
           <div style={{ display: "flex", gap: "15px" }}>
-            <button onClick={handleSave} disabled={uploading || ageError} style={{ flex: 1, padding: "12px", backgroundColor: ageError ? "#bdc3c7" : "#2ecc71", color: "#fff", border: "none", borderRadius: "5px", cursor: ageError ? "not-allowed" : "pointer", fontWeight: "bold", transition: "0.3s" }}>
+            <button onClick={handleSave} disabled={uploading || ageError} style={{ flex: 1, padding: "12px", backgroundColor: (uploading || ageError) ? "#bdc3c7" : "#2ecc71", color: "#fff", border: "none", borderRadius: "5px", cursor: (uploading || ageError) ? "not-allowed" : "pointer", fontWeight: "bold", transition: "0.3s" }}>
               {uploading ? "ĐANG TẢI ẢNH..." : "LƯU THAY ĐỔI"}
             </button>
             <button onClick={() => { setIsEditing(false); setAgeError(""); }} style={{ flex: 1, padding: "12px", backgroundColor: "#e74c3c", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", transition: "0.3s" }}>

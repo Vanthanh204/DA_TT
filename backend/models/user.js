@@ -28,6 +28,10 @@ const UserSchema = new mongoose.Schema({
       message: "Tuổi phải là số nguyên dương"
     }
   },
+  avatar: {
+    type: String,
+    default: ""
+  },
   role: {
     type: String,
     enum: ["admin", "user"],

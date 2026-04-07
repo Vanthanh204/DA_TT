@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 
 function Profile({ user: propUser }) {
-  // Ưu tiên lấy từ prop, sau đó mới đến localStorage
   const [user, setUser] = useState(propUser || JSON.parse(localStorage.getItem("user")));
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ username: "", age: 0, avatar: "" });
@@ -64,21 +63,31 @@ function Profile({ user: propUser }) {
     }
 
     try {
+      // Đảm bảo dùng API.put để gọi đến http://localhost:5000/api/users/me
       const res = await API.put("/users/me", {
-        ...editData,
-        age: ageNum
+        username: editData.username,
+        age: ageNum,
+        avatar: editData.avatar
       });
       
       const updatedUser = res.data;
+      
+      // Cập nhật state cục bộ
       setUser(updatedUser);
+      
+      // Lưu lại vào localStorage để đồng bộ phiên làm việc
       localStorage.setItem("user", JSON.stringify(updatedUser));
+      
       setIsEditing(false);
       alert("Cập nhật thành công!");
-      // Buộc load lại trang để cập nhật đồng bộ cho Navbar nếu cần
-      window.location.reload(); 
+      
+      // Thay vì reload trang gây 404 cho SPA route, ta chỉ cần thay đổi state
+      // Nếu bạn muốn Navbar cũng cập nhật avatar ngay, bạn có thể phát một Event tùy chỉnh
+      window.dispatchEvent(new Event("storage")); 
+      
     } catch (err) {
-      console.error("Lỗi cập nhật:", err);
-      alert("Không thể cập nhật thông tin!");
+      console.error("Lỗi cập nhật:", err.response?.data || err.message);
+      alert("Không thể cập nhật thông tin: " + (err.response?.data?.message || "Lỗi kết nối server"));
     }
   };
 

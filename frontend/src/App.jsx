@@ -38,12 +38,18 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/comic/:id" element={<ComicDetail />} />
         <Route path="/reading/:chapterId" element={<ReadingPage />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<Profile user={user} />} />
         <Route path="/search" element={<Search />} />
         <Route path="/history" element={<History />} />
         <Route path="/favorites" element={<Favorites />} />
+        
         {user?.role === "admin" && (
-          <Route path="/admin" element={<AdminDashboard />} />
+          <>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/comics" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminDashboard />} />
+            <Route path="/admin/genres" element={<AdminDashboard />} />
+          </>
         )}
       </Routes>
     </BrowserRouter>

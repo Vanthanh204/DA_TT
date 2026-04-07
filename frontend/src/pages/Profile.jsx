@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 import "../styles/profile.css";
 
-function Profile({ user }) {
+function Profile({ user: propUser }) {
+  const [user, setUser] = useState(propUser);
   const [stats, setStats] = useState({
     following: 0,
     read: 12,
@@ -10,7 +11,18 @@ function Profile({ user }) {
     favorites: 5
   });
 
-  if (!user) return <div className="profile-container">Đang tải...</div>;
+  useEffect(() => {
+    if (!propUser) {
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    } else {
+      setUser(propUser);
+    }
+  }, [propUser]);
+
+  if (!user) return <div className="profile-container"><div className="glass-card">Đang xác thực tài khoản...</div></div>;
 
   return (
     <div className="profile-container">

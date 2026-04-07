@@ -6,8 +6,9 @@ function AdminComics() {
   const [genres, setGenres] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showChapterForm, setShowChapterForm] = useState(null); 
+  const [editingComic, setEditingComic] = useState(null);
 
-  const [newComic, setNewComic] = useState({
+  const [comicData, setComicData] = useState({
     title: "",
     author: "",
     description: "",
@@ -18,7 +19,7 @@ function AdminComics() {
   const [newChapter, setNewChapter] = useState({
     chapterNumber: 1,
     title: "",
-    files: [] // Lưu danh sách file ảnh chọn từ máy
+    files: [] 
   });
 
   const [isUploading, setIsUploading] = useState(false);
@@ -54,7 +55,7 @@ function AdminComics() {
     try {
       setIsUploading(true);
       const res = await API.post("/upload/comic-cover", formData);
-      setNewComic({ ...newComic, coverImage: res.data.imageUrl });
+      setComicData({ ...comicData, coverImage: res.data.imageUrl });
       alert("Upload ảnh bìa thành công!");
     } catch (err) {
       alert("Lỗi upload ảnh bìa!");
@@ -63,51 +64,63 @@ function AdminComics() {
     }
   };
 
-  const handleCreateComic = async (e) => {
+  const handleSubmitComic = async (e) => {
     e.preventDefault();
-    if (!newComic.coverImage) return alert("Vui lòng upload ảnh bìa trước!");
+    if (!comicData.coverImage) return alert("Vui lòng upload ảnh bìa trước!");
     try {
-      await API.post("/upload/create-comic", newComic);
-      alert("Tạo truyện thành công!");
+      if (editingComic) {
+        await API.put(`/comics/${editingComic._id}`, comicData);
+        alert("Cập nhật truyện thành công!");
+      } else {
+        await API.post("/upload/create-comic", comicData);
+        alert("Tạo truyện thành công!");
+      }
       setShowAddForm(false);
+      setEditingComic(null);
+      setComicData({ title: "", author: "", description: "", coverImage: "", genres: [] });
       fetchComics();
     } catch (err) {
-      alert("Lỗi tạo truyện!");
+      alert("Lỗi khi xử lý truyện!");
     }
+  };
+
+  const handleEditComic = (comic) => {
+    setEditingComic(comic);
+    setComicData({
+      title: comic.title,
+      author: comic.author,
+      description: comic.description,
+      coverImage: comic.coverImage,
+      genres: comic.genres.map(g => g._id || g) // Lấy danh sách ID
+    });
+    setShowAddForm(true);
+    window.scrollTo(0, 0);
   };
 
   const handleCreateChapter = async (e) => {
     e.preventDefault();
     if (newChapter.files.length === 0) return alert("Vui lòng chọn ảnh cho chương!");
-
     setIsUploading(true);
     try {
-      // 1. Upload tất cả ảnh lên Cloudinary
       const formData = new FormData();
       for (let i = 0; i < newChapter.files.length; i++) {
         formData.append("images", newChapter.files[i]);
       }
-
       const uploadRes = await API.post("/upload/chapter-pages", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
-
       const imageUrls = uploadRes.data.imageUrls;
-
-      // 2. Tạo chương với danh sách link ảnh vừa nhận được
       await API.post("/upload/create-chapter", {
         comicId: showChapterForm,
         chapterNumber: newChapter.chapterNumber,
         title: newChapter.title,
         pages: imageUrls
       });
-
       alert("Thêm chương thành công!");
       setShowChapterForm(null);
       setNewChapter({ chapterNumber: 1, title: "", files: [] });
       fetchComics();
     } catch (err) {
-      console.error(err);
       alert("Lỗi khi thêm chương!");
     } finally {
       setIsUploading(false);
@@ -125,22 +138,22 @@ function AdminComics() {
     <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
         <h1>Quản lý truyện</h1>
-        <button onClick={() => setShowAddForm(!showAddForm)} style={{ padding: "10px 20px", background: "#27ae60", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+        <button onClick={() => { setShowAddForm(!showAddForm); setEditingComic(null); setComicData({title: "", author: "", description: "", coverImage: "", genres: []}); }} style={{ padding: "10px 20px", background: "#27ae60", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}>
           {showAddForm ? "Hủy" : "Thêm truyện mới"}
         </button>
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleCreateComic} style={{ background: "#fff", padding: "20px", borderRadius: "8px", border: "1px solid #ddd", marginBottom: "30px", display: "grid", gap: "15px" }}>
-          <h3>Thông tin truyện mới</h3>
-          <input type="text" placeholder="Tiêu đề truyện" required onChange={e => setNewComic({...newComic, title: e.target.value})} style={{ padding: "10px" }} />
-          <input type="text" placeholder="Tác giả" required onChange={e => setNewComic({...newComic, author: e.target.value})} style={{ padding: "10px" }} />
-          <textarea placeholder="Mô tả" required onChange={e => setNewComic({...newComic, description: e.target.value})} style={{ padding: "10px", minHeight: "100px" }} />
+        <form onSubmit={handleSubmitComic} style={{ background: "#fff", padding: "20px", borderRadius: "8px", border: "1px solid #ddd", marginBottom: "30px", display: "grid", gap: "15px" }}>
+          <h3>{editingComic ? `Đang sửa: ${editingComic.title}` : "Thông tin truyện mới"}</h3>
+          <input type="text" placeholder="Tiêu đề truyện" required value={comicData.title} onChange={e => setComicData({...comicData, title: e.target.value})} style={{ padding: "10px" }} />
+          <input type="text" placeholder="Tác giả" required value={comicData.author} onChange={e => setComicData({...comicData, author: e.target.value})} style={{ padding: "10px" }} />
+          <textarea placeholder="Mô tả" required value={comicData.description} onChange={e => setComicData({...comicData, description: e.target.value})} style={{ padding: "10px", minHeight: "100px" }} />
           
           <div>
             <label>Ảnh bìa: </label>
             <input type="file" onChange={handleUploadCover} accept="image/*" />
-            {newComic.coverImage && <img src={newComic.coverImage} alt="Cover" style={{ width: "100px", marginTop: "10px", display: "block" }} />}
+            {comicData.coverImage && <img src={comicData.coverImage} alt="Cover" style={{ width: "100px", marginTop: "10px", display: "block" }} />}
           </div>
 
           <div>
@@ -151,14 +164,15 @@ function AdminComics() {
                   <input 
                     type="checkbox" 
                     value={g._id} 
+                    checked={comicData.genres.includes(g._id)}
                     onChange={e => {
-                      const selected = [...newComic.genres];
+                      const selected = [...comicData.genres];
                       if (e.target.checked) selected.push(g._id);
                       else {
                         const index = selected.indexOf(g._id);
-                        selected.splice(index, 1);
+                        if (index > -1) selected.splice(index, 1);
                       }
-                      setNewComic({ ...newComic, genres: selected });
+                      setComicData({ ...comicData, genres: selected });
                     }} 
                   /> {g.name}
                 </label>
@@ -167,7 +181,7 @@ function AdminComics() {
           </div>
 
           <button type="submit" disabled={isUploading} style={{ padding: "15px", background: "#3498db", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
-            {isUploading ? "ĐANG TẢI ẢNH..." : "LƯU TRUYỆN MỚI"}
+            {isUploading ? "ĐANG XỬ LÝ..." : editingComic ? "CẬP NHẬT TRUYỆN" : "LƯU TRUYỆN MỚI"}
           </button>
         </form>
       )}
@@ -185,25 +199,13 @@ function AdminComics() {
               <input type="text" placeholder="Ví dụ: Khởi đầu mới" value={newChapter.title} onChange={e => setNewChapter({...newChapter, title: e.target.value})} style={{ padding: "10px" }} />
             </div>
             <div style={{ display: "grid", gap: "5px" }}>
-              <label>Chọn các trang truyện (có thể chọn nhiều file):</label>
-              <input 
-                type="file" 
-                multiple 
-                accept="image/*" 
-                required 
-                onChange={e => setNewChapter({...newChapter, files: e.target.files})} 
-                style={{ padding: "10px", border: "1px dashed #ccc" }} 
-              />
+              <label>Chọn các trang truyện (nhiều file):</label>
+              <input type="file" multiple accept="image/*" required onChange={e => setNewChapter({...newChapter, files: e.target.files})} style={{ padding: "10px", border: "1px dashed #ccc" }} />
               <p style={{ fontSize: "0.8rem", color: "#666" }}>Đã chọn: {newChapter.files.length} ảnh</p>
             </div>
-            
-            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-              <button type="submit" disabled={isUploading} style={{ flex: 1, padding: "12px", background: "#27ae60", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
-                {isUploading ? "ĐANG UPLOAD..." : "LƯU CHƯƠNG"}
-              </button>
-              <button type="button" onClick={() => setShowChapterForm(null)} style={{ flex: 1, padding: "12px", background: "#e74c3c", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}>
-                HỦY
-              </button>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button type="submit" disabled={isUploading} style={{ flex: 1, padding: "12px", background: "#27ae60", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>{isUploading ? "ĐANG UPLOAD..." : "LƯU CHƯƠNG"}</button>
+              <button type="button" onClick={() => setShowChapterForm(null)} style={{ flex: 1, padding: "12px", background: "#e74c3c", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}>HỦY</button>
             </div>
           </form>
         </div>
@@ -227,13 +229,9 @@ function AdminComics() {
               <td style={{ padding: "15px", border: "1px solid #ddd", fontWeight: "bold" }}>{comic.title}</td>
               <td style={{ padding: "15px", border: "1px solid #ddd" }}>{comic.author}</td>
               <td style={{ padding: "15px", border: "1px solid #ddd", textAlign: "center" }}>
+                <button onClick={() => handleEditComic(comic)} style={{ marginRight: "10px", padding: "8px 15px", background: "#f39c12", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" }}>Sửa</button>
                 <button onClick={() => setShowChapterForm(comic._id)} style={{ marginRight: "10px", padding: "8px 15px", background: "#3498db", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" }}>+ Chương</button>
-                <button 
-                  onClick={() => handleDelete(comic._id)}
-                  style={{ color: "#fff", backgroundColor: "#e74c3c", border: "none", padding: "8px 15px", borderRadius: "4px", cursor: "pointer" }}
-                >
-                  Xóa
-                </button>
+                <button onClick={() => handleDelete(comic._id)} style={{ color: "#fff", backgroundColor: "#e74c3c", border: "none", padding: "8px 15px", borderRadius: "4px", cursor: "pointer" }}>Xóa</button>
               </td>
             </tr>
           ))}

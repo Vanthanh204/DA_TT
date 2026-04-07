@@ -277,24 +277,44 @@
 }
 
 @media (max-width: 900px) {
-  .menu-toggle {
-    display: block;
-    order: 3;
-  }
-
   .nav-container {
     flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 15px;
   }
 
   .nav-left {
     order: 1;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nav-menu-dropdown {
+    display: none; /* Ẩn Mục lục gốc trên mobile */
   }
 
   .search-box {
-    order: 4;
-    max-width: 100%;
+    order: 2;
+    flex: 1; /* Chiếm hết khoảng trống còn lại */
+    margin: 0;
+    max-width: calc(100% - 50px); /* Chừa chỗ cho nút hamburger */
+  }
+
+  .search-box input {
+    box-sizing: border-box;
     width: 100%;
-    margin: 10px 0 0 0;
+  }
+
+  .menu-toggle {
+    display: block;
+    order: 3;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #333;
+    border-radius: 4px;
   }
 
   .menu {
@@ -303,12 +323,13 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: #222;
+    background: #1a1a1a;
     flex-direction: column;
-    padding: 20px;
-    gap: 15px;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    padding: 15px;
+    gap: 10px;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.5);
     border-top: 1px solid #333;
+    z-index: 999;
   }
 
   .menu.open {
@@ -318,9 +339,21 @@
   .user-info {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding-top: 10px;
+    border-top: 1px solid #333;
   }
 
-  .nav-menu-dropdown {
-    display: none; /* Ẩn bớt mục lục trên mobile nếu cần, hoặc để nguyên */
+  .auth-links {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Thêm cho màn hình cực nhỏ */
+@media (max-width: 400px) {
+  .logo {
+    font-size: 1.2rem;
   }
 }

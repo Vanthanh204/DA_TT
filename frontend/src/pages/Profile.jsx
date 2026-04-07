@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 
-function Profile({ user: propUser }) {
+function Profile({ user: propUser, setUser: setGlobalUser }) {
+  // Ưu tiên dùng dữ liệu từ App (propUser)
   const [user, setUser] = useState(propUser || JSON.parse(localStorage.getItem("user")));
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ username: "", age: 0, avatar: "" });
@@ -11,22 +12,21 @@ function Profile({ user: propUser }) {
   const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   useEffect(() => {
-    const savedUser = propUser || JSON.parse(localStorage.getItem("user"));
-    if (savedUser) {
-      setUser(savedUser);
+    if (propUser) {
+      setUser(propUser);
       setEditData({ 
-        username: savedUser.username, 
-        age: savedUser.age || 0, 
-        avatar: savedUser.avatar || "" 
+        username: propUser.username, 
+        age: propUser.age || 0, 
+        avatar: propUser.avatar || "" 
       });
     }
   }, [propUser]);
 
   const handleAgeChange = (val) => {
-    const age = parseInt(val);
-    setEditData({ ...editData, age: val });
+    const ageVal = val === "" ? "" : parseInt(val);
+    setEditData({ ...editData, age: ageVal });
     
-    if (isNaN(age) || age < 6 || age > 100) {
+    if (ageVal !== "" && (isNaN(ageVal) || ageVal < 6 || ageVal > 100)) {
       setAgeError("Tuổi phải từ 6 đến 100");
     } else {
       setAgeError("");
@@ -63,7 +63,6 @@ function Profile({ user: propUser }) {
     }
 
     try {
-      // Đảm bảo dùng API.put để gọi đến http://localhost:5000/api/users/me
       const res = await API.put("/users/me", {
         username: editData.username,
         age: ageNum,
@@ -72,22 +71,23 @@ function Profile({ user: propUser }) {
       
       const updatedUser = res.data;
       
-      // Cập nhật state cục bộ
+      // 1. Cập nhật state cục bộ của trang Profile
       setUser(updatedUser);
       
-      // Lưu lại vào localStorage để đồng bộ phiên làm việc
+      // 2. Cập nhật state TOÀN CỤC của ứng dụng (giúp Navbar cập nhật ngay)
+      if (setGlobalUser) {
+        setGlobalUser(updatedUser);
+      }
+      
+      // 3. Cập nhật localStorage để lưu phiên làm việc
       localStorage.setItem("user", JSON.stringify(updatedUser));
       
       setIsEditing(false);
       alert("Cập nhật thành công!");
       
-      // Thay vì reload trang gây 404 cho SPA route, ta chỉ cần thay đổi state
-      // Nếu bạn muốn Navbar cũng cập nhật avatar ngay, bạn có thể phát một Event tùy chỉnh
-      window.dispatchEvent(new Event("storage")); 
-      
     } catch (err) {
       console.error("Lỗi cập nhật:", err.response?.data || err.message);
-      alert("Không thể cập nhật thông tin: " + (err.response?.data?.message || "Lỗi kết nối server"));
+      alert("Không thể cập nhật thông tin!");
     }
   };
 

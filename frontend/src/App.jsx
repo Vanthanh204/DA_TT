@@ -42,14 +42,8 @@ function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/history" element={<History />} />
         <Route path="/favorites" element={<Favorites />} />
-        
         {user?.role === "admin" && (
-          <>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/comics" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminDashboard />} />
-            <Route path="/admin/genres" element={<AdminDashboard />} />
-          </>
+          <Route path="/admin" element={<AdminDashboard />} />
         )}
       </Routes>
     </BrowserRouter>

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../services/api";
-import "../styles/admin.css";
-import "../styles/profile.css"; // Dùng chung glass-card
 
 function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -24,45 +22,33 @@ function AdminDashboard() {
   }, []);
 
   return (
-    <div className="profile-container"> {/* Dùng container tối chung */}
-      <div className="admin-header">
-        <h1>Bảng Quản Trị</h1>
-        <p style={{color: '#adaaaa'}}>Chào mừng trở lại, Admin. Hệ thống đang hoạt động ổn định.</p>
+    <div className="admin-dashboard" style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
+      <h1>Bảng Quản Trị</h1>
+      
+      <div className="stats-container" style={{ display: "flex", gap: "20px", marginBottom: "40px" }}>
+        <div style={{ flex: 1, padding: "20px", background: "#3498db", color: "#fff", borderRadius: "10px" }}>
+          <h3>Người dùng</h3>
+          <p style={{ fontSize: "2rem", margin: 0 }}>{stats.totalUsers}</p>
+        </div>
+        <div style={{ flex: 1, padding: "20px", background: "#e67e22", color: "#fff", borderRadius: "10px" }}>
+          <h3>Bộ truyện</h3>
+          <p style={{ fontSize: "2rem", margin: 0 }}>{stats.totalComics}</p>
+        </div>
+        <div style={{ flex: 1, padding: "20px", background: "#27ae60", color: "#fff", borderRadius: "10px" }}>
+          <h3>Chương truyện</h3>
+          <p style={{ fontSize: "2rem", margin: 0 }}>{stats.totalChapters}</p>
+        </div>
       </div>
 
-      {/* Thống kê hệ thống */}
-      <section className="stats-grid">
-        <div className="glass-card stat-item">
-          <span className="stat-value">{stats.totalUsers}</span>
-          <span className="stat-label">Người dùng</span>
-        </div>
-        <div className="glass-card stat-item">
-          <span className="stat-value">{stats.totalComics}</span>
-          <span className="stat-label">Bộ truyện</span>
-        </div>
-        <div className="glass-card stat-item">
-          <span className="stat-value">{stats.totalChapters}</span>
-          <span className="stat-label">Chương truyện</span>
-        </div>
-      </section>
-
-      {/* Các hành động quản trị */}
-      <h2 className="section-title">Công cụ quản lý</h2>
-      <div className="admin-actions">
-        <Link to="/admin/comics" className="glass-card action-card">
-          <i className="fas fa-book action-icon"></i>
-          <h3>Quản lý truyện</h3>
-          <p>Thêm, sửa, xóa các bộ truyện và chương.</p>
+      <div className="admin-actions" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px" }}>
+        <Link to="/admin/comics" style={{ padding: "20px", background: "#eee", textDecoration: "none", color: "#333", borderRadius: "8px", textAlign: "center" }}>
+          Quản lý truyện
         </Link>
-        <Link to="/admin/users" className="glass-card action-card">
-          <i className="fas fa-users action-icon"></i>
-          <h3>Quản lý người dùng</h3>
-          <p>Phân quyền và quản lý tài khoản thành viên.</p>
+        <Link to="/admin/users" style={{ padding: "20px", background: "#eee", textDecoration: "none", color: "#333", borderRadius: "8px", textAlign: "center" }}>
+          Quản lý người dùng
         </Link>
-        <Link to="/admin/genres" className="glass-card action-card">
-          <i className="fas fa-tags action-icon"></i>
-          <h3>Quản lý thể loại</h3>
-          <p>Chỉnh sửa các danh mục thể loại truyện.</p>
+        <Link to="/admin/genres" style={{ padding: "20px", background: "#eee", textDecoration: "none", color: "#333", borderRadius: "8px", textAlign: "center" }}>
+          Quản lý thể loại
         </Link>
       </div>
     </div>

@@ -153,26 +153,84 @@ function Navbar({ user, onLogout }) {
           <i className={isMenuOpen ? "fas fa-times" : "fas fa-bars"}></i>
         </button>
 
-        <div className={`menu ${isMenuOpen ? "open" : ""}`}>
-          <Link to="/">Trang chủ</Link>
-          
-          {/* Hiển thị link Admin nếu là admin */}
-          {user?.role === "admin" && (
-            <Link to="/admin" className="admin-link">Quản trị</Link>
-          )}
+        <div className={`menu-sidebar ${isMenuOpen ? "open" : ""}`}>
+          <div className="sidebar-header">
+            <span>Tính Năng Tài Khoản</span>
+            <button className="close-btn" onClick={() => setIsMenuOpen(false)}>×</button>
+          </div>
 
           {user ? (
-            <div className="user-info">
-              <Link to="/profile" className="username">Chào, {user.username}</Link>
-              <button onClick={onLogout} className="btn-logout">Đăng xuất</button>
+            <div className="sidebar-user-info">
+              <div className="sidebar-item">
+                <i className="fas fa-user-circle"></i>
+                <span>{user.username}</span>
+              </div>
+              <div className="sidebar-item">
+                <i className="fas fa-medal"></i>
+                <span>Cấp Độ: {user.level || 0}</span>
+              </div>
+              <Link to="/profile" className="sidebar-item">
+                <i className="fas fa-bell"></i>
+                <span>Thông Báo</span>
+              </Link>
             </div>
           ) : (
-            <div className="auth-links">
-              <Link to="/login" className="btn-login">Đăng nhập</Link>
-              <Link to="/register" className="btn-register">Đăng ký</Link>
+            <div className="sidebar-user-info">
+              <Link to="/login" className="sidebar-item">
+                <i className="fas fa-sign-in-alt"></i>
+                <span>Đăng nhập</span>
+              </Link>
+              <Link to="/register" className="sidebar-item">
+                <i className="fas fa-user-plus"></i>
+                <span>Đăng ký</span>
+              </Link>
             </div>
           )}
+
+          <hr className="sidebar-divider" />
+
+          <div className="sidebar-menu">
+            <Link to="/" className="sidebar-menu-item">
+              <i className="fas fa-home"></i>
+              <span>Trang Chủ</span>
+            </Link>
+            <Link to="/history" className="sidebar-menu-item">
+              <i className="fas fa-history"></i>
+              <span>Lịch Sử</span>
+            </Link>
+            <Link to="/favorites" className="sidebar-menu-item">
+              <i className="fas fa-heart"></i>
+              <span>Truyện Theo Dõi</span>
+            </Link>
+            {user?.role === "admin" && (
+              <Link to="/admin" className="sidebar-menu-item admin-item">
+                <i className="fas fa-user-shield"></i>
+                <span>Quản Trị Viên</span>
+              </Link>
+            )}
+            <div className="sidebar-menu-item">
+              <i className="fas fa-question-circle"></i>
+              <span>Liên Hệ</span>
+            </div>
+            <div className="sidebar-menu-item">
+              <i className="fas fa-exchange-alt"></i>
+              <span>Chuyển Đổi Giao Diện</span>
+            </div>
+          </div>
+
+          {user && (
+            <>
+              <hr className="sidebar-divider" />
+              <div className="sidebar-logout" onClick={onLogout}>
+                <i className="fas fa-door-open"></i>
+                <span>Đăng Xuất</span>
+              </div>
+            </>
+          )}
         </div>
+
+        {/* Lớp phủ mờ khi mở sidebar */}
+        {isMenuOpen && <div className="sidebar-overlay" onClick={() => setIsMenuOpen(false)}></div>}
       </div>
     </nav>
   );

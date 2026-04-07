@@ -315,124 +315,39 @@
     justify-content: center;
     background: #333;
     border-radius: 4px;
-    z-index: 1002;
   }
 
-  /* Sidebar Styles */
-  .menu-sidebar {
-    display: flex;
-    position: fixed;
-    top: 0;
-    right: -300px; /* Ẩn bên phải */
-    width: 280px;
-    height: 100vh;
-    background: #1e1e1e;
-    flex-direction: column;
-    padding: 20px;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-    z-index: 1001;
-    transition: right 0.3s ease-in-out;
-    color: #ddd;
-    overflow-y: auto;
-  }
-
-  .menu-sidebar.open {
-    right: 0; /* Hiện ra */
-  }
-
-  .sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    color: #fff;
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    color: #aaa;
-    font-size: 24px;
-    cursor: pointer;
-  }
-
-  .sidebar-user-info .sidebar-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    color: #ddd;
-    text-decoration: none;
-    gap: 12px;
-  }
-
-  .sidebar-user-info i {
-    width: 20px;
-    text-align: center;
-    font-size: 1.1rem;
-    color: #3498db;
-  }
-
-  .sidebar-divider {
-    border: none;
-    border-top: 1px solid #333;
-    margin: 15px 0;
-  }
-
-  .sidebar-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .sidebar-menu-item {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.3s;
-    color: #ddd;
-    text-decoration: none;
-    gap: 12px;
-  }
-
-  .sidebar-menu-item:hover {
-    background: #2a2a2a;
-  }
-
-  .sidebar-menu-item.admin-item {
-    color: #e67e22;
-  }
-
-  .sidebar-logout {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    cursor: pointer;
-    color: #e74c3c;
-    gap: 12px;
-    transition: 0.3s;
-  }
-
-  .sidebar-logout:hover {
-    background: #2a2a2a;
-  }
-
-  .sidebar-overlay {
-    position: fixed;
-    top: 0;
+  .menu {
+    display: none;
+    position: absolute;
+    top: 100%;
     left: 0;
     right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 1000;
+    background: #1a1a1a;
+    flex-direction: column;
+    padding: 15px;
+    gap: 10px;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.5);
+    border-top: 1px solid #333;
+    z-index: 999;
   }
 
-  /* Ẩn các menu cũ */
-  .menu {
-    display: none !important;
+  .menu.open {
+    display: flex;
+  }
+
+  .user-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding-top: 10px;
+    border-top: 1px solid #333;
+  }
+
+  .auth-links {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 

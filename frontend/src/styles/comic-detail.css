@@ -1,0 +1,118 @@
+.comic-detail-container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.comic-info-header {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.comic-cover-large {
+  width: 250px;
+  height: 350px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.comic-text-info {
+  flex: 1;
+}
+
+.comic-text-info h1 {
+  margin-top: 0;
+  color: #333;
+}
+
+.comic-desc {
+  margin: 20px 0;
+  line-height: 1.6;
+  color: #555;
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+.read-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-read, .btn-continue, .btn-latest, .btn-favorite {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn-read { background: #e74c3c; color: white; }
+.btn-read:hover { background: #c0392b; }
+
+.btn-continue { background: #3498db; color: white; }
+.btn-continue:hover { background: #2980b9; }
+
+.btn-latest { background: #2ecc71; color: white; }
+.btn-latest:hover { background: #27ae60; }
+
+.btn-favorite {
+  background: #f8f9fa;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+.btn-favorite.active {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-favorite:hover {
+  background: #fdeaea;
+}
+
+.btn-favorite.active:hover {
+  background: #c0392b;
+}
+
+.chapter-list-section h2 {
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.chapter-item {
+  padding: 12px;
+  background: #f1f1f1;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: 0.2s;
+}
+
+.chapter-item:hover {
+  background: #e0e0e0;
+  color: #e74c3c;
+}
+
+@media (max-width: 768px) {
+  .comic-info-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}

@@ -1,0 +1,267 @@
+.navbar {
+  background: #222;
+  color: white;
+  padding: 10px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: white;
+}
+
+.logo span { color: #3498db; }
+
+/* Dropdown Mục lục */
+.nav-menu-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropbtn {
+  background-color: #34495e;
+  color: white;
+  padding: 8px 15px;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropbtn:hover { background-color: #2c3e50; }
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #fff;
+  min-width: 200px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 100;
+  border-radius: 4px;
+  margin-top: 5px;
+  padding: 10px 0;
+}
+
+.menu-item {
+  color: #333;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  transition: 0.2s;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.menu-item:hover { background-color: #f1f1f1; color: #3498db; }
+
+.item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1; /* Chiếm hết phần còn lại trừ mũi tên */
+}
+
+.item-left i {
+  width: 16px;
+  text-align: center;
+}
+
+.arrow {
+  font-size: 0.7rem;
+  color: #999;
+}
+
+.has-submenu { position: relative; }
+
+.menu-link {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+/* Submenu bung ra bên cạnh */
+.submenu {
+  display: none;
+  position: absolute;
+  left: 100%; /* Đưa sang bên phải 100% của menu cha */
+  top: 0;
+  background: white;
+  min-width: 300px;
+  box-shadow: 4px 8px 16px rgba(0,0,0,0.15);
+  border-radius: 0 4px 4px 4px;
+  padding: 15px;
+  z-index: 101;
+  border-left: 1px solid #eee;
+}
+
+.has-submenu:hover .submenu { display: block; }
+
+.submenu-header {
+  font-weight: bold;
+  color: #7f8c8d;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.genres-grid-nav {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.genres-grid-nav a {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  color: #555;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.genres-grid-nav a:hover { background: #3498db; color: white; }
+
+.nav-menu-dropdown:hover .dropdown-content { display: block; }
+
+/* Search Box Suggestions */
+.search-box {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+  margin: 0 15px;
+}
+
+.search-suggestions {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.suggestion-item:hover {
+  background: #f9f9f9;
+}
+
+.suggestion-item img {
+  width: 40px;
+  height: 55px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.suggestion-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestion-title {
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.suggestion-author {
+  color: #7f8c8d;
+  font-size: 0.75rem;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 8px 35px 8px 15px;
+  border-radius: 20px;
+  border: none;
+  outline: none;
+  background: #333;
+  color: white;
+}
+
+.search-box i {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7f8c8d;
+}
+
+/* Menu links */
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.menu a {
+  color: #bdc3c7;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: 0.3s;
+}
+
+.menu a:hover { color: #3498db; }
+
+.admin-link { color: #e67e22 !important; font-weight: bold; }
+
+.user-info { display: flex; align-items: center; gap: 15px; }
+.username { color: #3498db; text-decoration: none; font-weight: bold; }
+
+.btn-logout {
+  background: #c0392b;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.auth-links { display: flex; gap: 10px; }
+.btn-login { color: #fff; }
+.btn-register {
+  background: #3498db;
+  color: white;
+  padding: 6px 15px;
+  border-radius: 20px;
+}

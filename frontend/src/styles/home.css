@@ -1,0 +1,218 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+.home-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.banner {
+  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://wallpaperaccess.com/full/1592679.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  margin-bottom: 2rem;
+}
+
+.banner-content h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.banner-content p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.btn-explore {
+  padding: 0.8rem 2.5rem;
+  font-size: 1.1rem;
+  background-color: #e94560;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.3s;
+}
+
+.btn-explore:hover {
+  transform: scale(1.05);
+}
+
+.main-content {
+  display: flex;
+  gap: 2rem;
+  padding: 0 20px 20px;
+}
+
+.comic-section {
+  flex: 3;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  color: #1a1a2e;
+  border-left: 5px solid #e94560;
+  padding-left: 10px;
+}
+
+.view-all {
+  color: #e94560;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.comic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.comic-card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+  cursor: pointer;
+}
+
+.comic-card:hover {
+  transform: translateY(-5px);
+}
+
+.comic-image {
+  position: relative;
+  height: 250px;
+}
+
+.comic-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chapter-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: #e94560;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.comic-info {
+  padding: 10px;
+}
+
+.comic-title {
+  font-size: 1rem;
+  margin: 0 0 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #1a1a2e;
+}
+
+.comic-status {
+  font-size: 0.8rem;
+  color: #777;
+  margin: 0;
+}
+
+.sidebar {
+  flex: 1;
+}
+
+.sidebar-section {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.sidebar-section h3 {
+  margin-top: 0;
+  border-bottom: 2px solid #f0f2f5;
+  padding-bottom: 10px;
+  font-size: 1.2rem;
+  color: #1a1a2e;
+}
+
+.top-list {
+  list-style: none;
+  padding: 0;
+}
+
+.top-list li {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.rank {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #e94560;
+  width: 30px;
+}
+
+.top-title {
+  font-weight: 500;
+  color: #333;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tags span {
+  background-color: #f0f2f5;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tags span:hover {
+  background-color: #e94560;
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    flex-direction: column;
+  }
+  .banner-content h1 {
+    font-size: 2rem;
+  }
+}

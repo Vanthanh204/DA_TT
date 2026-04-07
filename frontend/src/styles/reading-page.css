@@ -108,3 +108,19 @@
   padding: 100px 20px;
   font-size: 1.2rem;
 }
+
+@media (max-width: 600px) {
+  .reading-container {
+    padding-top: 140px;
+  }
+  .nav-top h2 {
+    font-size: 0.95rem;
+  }
+  .chapter-nav {
+    gap: 10px;
+  }
+  .nav-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}

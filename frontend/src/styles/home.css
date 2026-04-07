@@ -216,3 +216,23 @@ body {
     font-size: 2rem;
   }
 }
+
+@media (max-width: 600px) {
+  .banner {
+    height: 200px;
+    margin-bottom: 1rem;
+  }
+  .banner-content p {
+    display: none;
+  }
+  .comic-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .comic-image {
+    height: 200px;
+  }
+  .section-header h2 {
+    font-size: 1.2rem;
+  }
+}

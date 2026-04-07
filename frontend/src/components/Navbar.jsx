@@ -8,7 +8,13 @@ function Navbar({ user, onLogout }) {
   const [suggestions, setSuggestions] = useState([]);
   const [genres, setGenres] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // Thêm state cho mobile menu
   const navigate = useNavigate();
+
+  // Đóng menu khi chuyển trang
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [navigate]);
 
   useEffect(() => {
     // Lấy danh sách thể loại cho mục lục
@@ -142,7 +148,12 @@ function Navbar({ user, onLogout }) {
           )}
         </div>
 
-        <div className="menu">
+        {/* Nút Hamburger cho Mobile */}
+        <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <i className={isMenuOpen ? "fas fa-times" : "fas fa-bars"}></i>
+        </button>
+
+        <div className={`menu ${isMenuOpen ? "open" : ""}`}>
           <Link to="/">Trang chủ</Link>
           
           {/* Hiển thị link Admin nếu là admin */}

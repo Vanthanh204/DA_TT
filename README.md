@@ -42,7 +42,7 @@ Dự án này bao gồm Frontend (React + Vite) và Backend (Node.js + Express).
 3. Kết nối với repo GitHub của bạn.
 4. Cấu hình:
    - **Root Directory:** `backend`
-   - **Build Command:** `npm install`
+   - **Build Command:** `npm install`  
    - **Start Command:** `npm start`
 5. Trong mục **Environment Variables**, thêm các biến từ file `.env.example`.
 

@@ -4,6 +4,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminComics from "./pages/AdminComics";
+import AdminUsers from "./pages/AdminUsers";
+import AdminGenres from "./pages/AdminGenres";
 import ComicDetail from "./pages/ComicDetail";
 import ReadingPage from "./pages/ReadingPage";
 import Profile from "./pages/Profile";
@@ -43,7 +46,12 @@ function App() {
         <Route path="/history" element={<History />} />
         <Route path="/favorites" element={<Favorites />} />
         {user?.role === "admin" && (
-          <Route path="/admin" element={<AdminDashboard />} />
+          <>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/comics" element={<AdminComics />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/genres" element={<AdminGenres />} />
+          </>
         )}
       </Routes>
     </BrowserRouter>

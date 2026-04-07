@@ -6,6 +6,7 @@ function Profile({ user: propUser }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ username: "", age: 0, avatar: "" });
   const [uploading, setUploading] = useState(false);
+  const [ageError, setAgeError] = useState("");
 
   useEffect(() => {
     const savedUser = propUser || JSON.parse(localStorage.getItem("user"));
@@ -19,6 +20,17 @@ function Profile({ user: propUser }) {
     }
   }, [propUser]);
 
+  const handleAgeChange = (val) => {
+    const age = parseInt(val);
+    setEditData({ ...editData, age: val }); // Vẫn lưu val để input không bị giật
+    
+    if (isNaN(age) || age < 5 || age > 100) {
+      setAgeError("Tuổi phải từ 5 đến 100");
+    } else {
+      setAgeError("");
+    }
+  };
+
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -28,8 +40,6 @@ function Profile({ user: propUser }) {
 
     setUploading(true);
     try {
-      // Tạm thời dùng chung route upload ảnh bìa (cần verifyAdmin nếu route đó yêu cầu)
-      // Nếu route /upload/comic-cover yêu cầu verifyAdmin, ta nên tạo route riêng hoặc bỏ verifyAdmin ở backend
       const res = await API.post("/upload/comic-cover", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
@@ -44,8 +54,17 @@ function Profile({ user: propUser }) {
   };
 
   const handleSave = async () => {
+    const ageNum = parseInt(editData.age);
+    if (isNaN(ageNum) || ageNum < 5 || ageNum > 100) {
+      setAgeError("Vui lòng nhập tuổi hợp lệ (5-100) trước khi lưu!");
+      return;
+    }
+
     try {
-      const res = await API.put("/users/me", editData);
+      const res = await API.put("/users/me", {
+        ...editData,
+        age: ageNum
+      });
       setUser(res.data);
       localStorage.setItem("user", JSON.stringify(res.data));
       setIsEditing(false);
@@ -64,11 +83,11 @@ function Profile({ user: propUser }) {
       <div style={{ background: "#fff", padding: "30px", borderRadius: "10px", boxShadow: "0 4px 15px rgba(0,0,0,0.1)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "30px" }}>
           <div style={{ position: "relative" }}>
-            <img src={isEditing ? (editData.avatar || "https://via.placeholder.com/100") : (user.avatar || "https://via.placeholder.com/100")} alt="Avatar" style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover", border: "3px solid #3498db" }} />
+            <img src={isEditing ? (editData.avatar || "https://via.placeholder.com/100") : (user.avatar || "https://via.placeholder.com/100")} alt="Avatar" style={{ width: "120px", height: "120px", borderRadius: "50%", objectFit: "cover", border: "3px solid #3498db" }} />
             {isEditing && (
-              <label style={{ position: "absolute", bottom: 0, right: 0, background: "#3498db", color: "#fff", padding: "5px", borderRadius: "50%", cursor: "pointer", fontSize: "0.8rem" }}>
-                <i className="fas fa-camera"></i>
-                <input type="file" hidden onChange={handleFileChange} />
+              <label style={{ position: "absolute", bottom: "5px", right: "5px", background: "#3498db", color: "#fff", padding: "8px", borderRadius: "50%", cursor: "pointer", fontSize: "0.9rem", boxShadow: "0 2px 5px rgba(0,0,0,0.2)" }}>
+                📷
+                <input type="file" hidden onChange={handleFileChange} accept="image/*" />
               </label>
             )}
           </div>
@@ -78,51 +97,54 @@ function Profile({ user: propUser }) {
                 type="text" 
                 value={editData.username} 
                 onChange={(e) => setEditData({...editData, username: e.target.value})}
-                style={{ fontSize: "1.5rem", padding: "5px", borderRadius: "5px", border: "1px solid #ddd" }}
+                style={{ fontSize: "1.5rem", padding: "5px 10px", borderRadius: "5px", border: "1px solid #ddd", width: "100%" }}
               />
             ) : (
-              <h3 style={{ margin: 0, fontSize: "1.5rem" }}>{user.username}</h3>
+              <h3 style={{ margin: 0, fontSize: "1.8rem", color: "#2c3e50" }}>{user.username}</h3>
             )}
-            <p style={{ color: "#777", margin: "5px 0" }}>{user.role === "admin" ? "Quản trị viên" : "Thành viên"}</p>
+            <p style={{ color: "#3498db", margin: "5px 0", fontWeight: "bold" }}>{user.role === "admin" ? "Quản trị viên" : "Thành viên"}</p>
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "30px" }}>
-          <div>
-            <label style={{ color: "#999", fontSize: "0.8rem", display: "block" }}>Email</label>
-            <p style={{ margin: "5px 0", fontWeight: "bold" }}>{user.email || "Chưa cập nhật"}</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px", marginBottom: "30px" }}>
+          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
+            <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Email</label>
+            <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.email || "Chưa cập nhật"}</p>
           </div>
-          <div>
-            <label style={{ color: "#999", fontSize: "0.8rem", display: "block" }}>Cấp độ</label>
-            <p style={{ margin: "5px 0", fontWeight: "bold" }}>{user.level || 0}</p>
+          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
+            <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Cấp độ</label>
+            <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.level || 0}</p>
           </div>
-          <div>
-            <label style={{ color: "#999", fontSize: "0.8rem", display: "block" }}>Tuổi</label>
+          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
+            <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Tuổi</label>
             {isEditing ? (
-              <input 
-                type="number" 
-                value={editData.age} 
-                onChange={(e) => setEditData({...editData, age: e.target.value})}
-                style={{ padding: "5px", borderRadius: "5px", border: "1px solid #ddd", width: "60px" }}
-              />
+              <>
+                <input 
+                  type="number" 
+                  value={editData.age} 
+                  onChange={(e) => handleAgeChange(e.target.value)}
+                  style={{ padding: "8px", borderRadius: "5px", border: ageError ? "1px solid red" : "1px solid #ddd", width: "80px", fontSize: "1rem" }}
+                />
+                {ageError && <p style={{ color: "red", fontSize: "0.75rem", marginTop: "5px", margin: 0 }}>{ageError}</p>}
+              </>
             ) : (
-              <p style={{ margin: "5px 0", fontWeight: "bold" }}>{user.age || "Chưa đặt"}</p>
+              <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.age || "Chưa đặt"}</p>
             )}
           </div>
         </div>
 
         {isEditing ? (
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button onClick={handleSave} disabled={uploading} style={{ flex: 1, padding: "12px", backgroundColor: "#2ecc71", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
-              {uploading ? "Đang tải ảnh..." : "Lưu thay đổi"}
+          <div style={{ display: "flex", gap: "15px" }}>
+            <button onClick={handleSave} disabled={uploading || ageError} style={{ flex: 1, padding: "12px", backgroundColor: ageError ? "#bdc3c7" : "#2ecc71", color: "#fff", border: "none", borderRadius: "5px", cursor: ageError ? "not-allowed" : "pointer", fontWeight: "bold", transition: "0.3s" }}>
+              {uploading ? "ĐANG TẢI ẢNH..." : "LƯU THAY ĐỔI"}
             </button>
-            <button onClick={() => setIsEditing(false)} style={{ flex: 1, padding: "12px", backgroundColor: "#e74c3c", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
-              Hủy
+            <button onClick={() => { setIsEditing(false); setAgeError(""); }} style={{ flex: 1, padding: "12px", backgroundColor: "#e74c3c", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", transition: "0.3s" }}>
+              HỦY
             </button>
           </div>
         ) : (
-          <button onClick={() => setIsEditing(true)} style={{ width: "100%", padding: "12px", backgroundColor: "#3498db", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
-            Chỉnh sửa thông tin
+          <button onClick={() => setIsEditing(true)} style={{ width: "100%", padding: "12px", backgroundColor: "#3498db", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", transition: "0.3s" }}>
+            CHỈNH SỬA THÔNG TIN
           </button>
         )}
       </div>

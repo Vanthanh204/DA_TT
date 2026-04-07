@@ -47,13 +47,13 @@ router.get("/me", verifyToken, async (req, res) => {
   }
 });
 
-// 👉 User tự cập nhật thông tin (Chỉ cho phép đổi username, age)
+// 👉 User tự cập nhật thông tin (Chỉ cho phép đổi username, age, avatar)
 router.put("/me", verifyToken, async (req, res) => {
   try {
-    const { username, age } = req.body;
+    const { username, age, avatar } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
-      { username, age },
+      { username, age, avatar },
       { new: true }
     ).select("-password");
     res.json(updatedUser);

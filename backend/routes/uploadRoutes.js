@@ -16,7 +16,7 @@ router.post("/comic-cover", verifyAdmin, uploadCloud.single("image"), async (req
 });
 
 // 👉 2. UPLOAD HÀNG LOẠT TRANG TRUYỆN CHO CHƯƠNG (Admin only)
-router.post("/chapter-pages", verifyAdmin, uploadCloud.array("images", 150), async (req, res) => {
+router.post("/chapter-pages", verifyAdmin, uploadCloud.array("images", 200), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "Chưa có ảnh nào được chọn" });

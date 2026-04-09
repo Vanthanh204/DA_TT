@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 
 function Profile({ user: propUser, setUser: setGlobalUser }) {
-  // Ưu tiên dùng dữ liệu từ App (propUser)
   const [user, setUser] = useState(propUser || JSON.parse(localStorage.getItem("user")));
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ username: "", age: 0, avatar: "" });
+  const [editData, setEditData] = useState({ username: "", birthDate: "", avatar: "" });
   const [uploading, setUploading] = useState(false);
-  const [ageError, setAgeError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [validationError, setValidationError] = useState("");
 
   const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
@@ -20,10 +19,9 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
         setUser(userData);
         setEditData({ 
           username: userData.username, 
-          age: userData.age || 0, 
+          birthDate: userData.birthDate ? userData.birthDate.split("T")[0] : "", 
           avatar: userData.avatar || "" 
         });
-        // Cập nhật lại global và local storage nếu có thay đổi
         if (setGlobalUser) setGlobalUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
       } catch (err) {
@@ -32,37 +30,51 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
         setLoading(false);
       }
     };
-
     fetchUserData();
   }, [setGlobalUser]);
 
-  const handleAgeChange = (val) => {
-    const ageVal = val === "" ? "" : parseInt(val);
-    setEditData({ ...editData, age: ageVal });
+  const validate = () => {
+    // 1. Kiểm tra chuỗi rỗng
+    if (!editData.username.trim()) return "Tên đăng nhập không được để trống";
     
-    if (ageVal !== "" && (isNaN(ageVal) || ageVal < 6 || ageVal > 100)) {
-      setAgeError("Tuổi phải từ 6 đến 100");
-    } else {
-      setAgeError("");
+    // 2. Kiểm tra độ dài chuỗi
+    if (editData.username.length < 3 || editData.username.length > 20) return "Tên đăng nhập từ 3-20 ký tự";
+
+    // 3. Kiểm tra ngày tháng (Birth Date)
+    if (!editData.birthDate) return "Vui lòng chọn ngày sinh";
+    
+    const birthDate = new Date(editData.birthDate);
+    const now = new Date();
+    
+    // Kiểm tra ngày trong tương lai
+    if (birthDate > now) return "Ngày sinh không được là ngày trong tương lai";
+
+    // Kiểm tra tuổi (6-100)
+    let age = now.getFullYear() - birthDate.getFullYear();
+    const m = now.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < birthDate.getDate())) {
+        age--;
     }
+
+    if (age < 6) return "Bạn phải ít nhất 6 tuổi";
+    if (age > 100) return "Tuổi không được vượt quá 100";
+
+    return "";
   };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const formData = new FormData();
     formData.append("image", file);
-
     setUploading(true);
     try {
       const res = await API.post("/upload/comic-cover", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       setEditData({ ...editData, avatar: res.data.imageUrl });
-      alert("Tải ảnh lên thành công! Nhấn 'Lưu thay đổi' để hoàn tất.");
+      alert("Tải ảnh lên thành công!");
     } catch (err) {
-      console.error("Lỗi upload:", err);
       alert("Lỗi khi tải ảnh lên!");
     } finally {
       setUploading(false);
@@ -70,45 +82,47 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
   };
 
   const handleSave = async () => {
-    // Đóng bàn phím trên mobile
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
 
-    const ageNum = parseInt(editData.age);
-    if (isNaN(ageNum) || ageNum < 6 || ageNum > 100) {
-      const errorMsg = "Vui lòng nhập tuổi hợp lệ (6-100) trước khi lưu!";
-      setAgeError(errorMsg);
-      alert(errorMsg); // Alert để người dùng mobile dễ thấy
+    const error = validate();
+    if (error) {
+      setValidationError(error);
+      alert(error);
       return;
     }
 
     try {
-      setIsEditing(false); // Đóng mode edit trước để tránh double click
+      setIsEditing(false);
       setUploading(true);
-      
-      const res = await API.put("/users/me", {
-        username: editData.username,
-        age: ageNum,
-        avatar: editData.avatar
-      });
-      
+      const res = await API.put("/users/me", editData);
       const updatedUser = res.data;
       setUser(updatedUser);
       if (setGlobalUser) setGlobalUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      
+      setValidationError("");
       alert("Cập nhật thành công!");
     } catch (err) {
-      console.error("Lỗi cập nhật:", err.response?.data || err.message);
-      setIsEditing(true); // Mở lại nếu lỗi
-      alert("Không thể cập nhật: " + (err.response?.data?.message || "Lỗi kết nối"));
+      console.error("Lỗi cập nhật:", err);
+      setIsEditing(true);
+      alert("Lỗi: " + (err.response?.data?.message || "Không thể lưu thông tin"));
     } finally {
       setUploading(false);
     }
   };
 
-  if (!user) return <div style={{padding: '100px', textAlign: 'center'}}>Bạn cần đăng nhập để xem trang này.</div>;
+  const calculateAge = (dateString) => {
+    if (!dateString) return "Chưa đặt";
+    const today = new Date();
+    const birthDate = new Date(dateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; }
+    return age;
+  };
+
+  if (!user) return <div style={{padding: '100px', textAlign: 'center'}}>Bạn cần đăng nhập.</div>;
 
   return (
     <div className="profile-page" style={{ padding: "40px", maxWidth: "800px", margin: "0 auto", backgroundColor: "#f4f4f4", minHeight: "80vh" }}>
@@ -123,20 +137,14 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
               style={{ width: "120px", height: "120px", borderRadius: "50%", objectFit: "cover", border: "3px solid #3498db" }} 
             />
             {isEditing && (
-              <label style={{ position: "absolute", bottom: "5px", right: "5px", background: "#3498db", color: "#fff", padding: "8px", borderRadius: "50%", cursor: "pointer", fontSize: "0.9rem", boxShadow: "0 2px 5px rgba(0,0,0,0.2)" }}>
-                📷
-                <input type="file" hidden onChange={handleFileChange} accept="image/*" />
+              <label style={{ position: "absolute", bottom: "5px", right: "5px", background: "#3498db", color: "#fff", padding: "8px", borderRadius: "50%", cursor: "pointer", fontSize: "0.9rem" }}>
+                📷<input type="file" hidden onChange={handleFileChange} accept="image/*" />
               </label>
             )}
           </div>
           <div>
             {isEditing ? (
-              <input 
-                type="text" 
-                value={editData.username} 
-                onChange={(e) => setEditData({...editData, username: e.target.value})}
-                style={{ fontSize: "1.5rem", padding: "5px 10px", borderRadius: "5px", border: "1px solid #ddd", width: "100%" }}
-              />
+              <input type="text" value={editData.username} onChange={(e) => setEditData({...editData, username: e.target.value})} style={{ fontSize: "1.5rem", padding: "5px 10px", borderRadius: "5px", border: "1px solid #ddd", width: "100%" }} />
             ) : (
               <h3 style={{ margin: 0, fontSize: "1.8rem", color: "#2c3e50" }}>{user.username}</h3>
             )}
@@ -147,43 +155,35 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px", marginBottom: "30px" }}>
           <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
             <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Email</label>
-            <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.email || "Chưa cập nhật"}</p>
+            <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.email}</p>
+          </div>
+          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
+            <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Ngày sinh</label>
+            {isEditing ? (
+              <input type="date" value={editData.birthDate} onChange={(e) => setEditData({...editData, birthDate: e.target.value})} style={{ padding: "8px", borderRadius: "5px", border: "1px solid #ddd", width: "100%" }} />
+            ) : (
+              <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.birthDate ? new Date(user.birthDate).toLocaleDateString("vi-VN") : "Chưa đặt"}</p>
+            )}
+          </div>
+          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
+            <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Tuổi</label>
+            <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{calculateAge(user.birthDate)}</p>
           </div>
           <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
             <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Cấp độ</label>
             <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.level || 0}</p>
           </div>
-          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
-            <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Tuổi</label>
-            {isEditing ? (
-              <>
-                <input 
-                  type="number" 
-                  value={editData.age} 
-                  onChange={(e) => handleAgeChange(e.target.value)}
-                  style={{ padding: "8px", borderRadius: "5px", border: ageError ? "1px solid red" : "1px solid #ddd", width: "80px", fontSize: "1rem" }}
-                />
-                {ageError && <p style={{ color: "red", fontSize: "0.75rem", marginTop: "5px", margin: 0 }}>{ageError}</p>}
-              </>
-            ) : (
-              <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.age || "Chưa đặt"}</p>
-            )}
-          </div>
         </div>
+
+        {validationError && <p style={{ color: "red", marginBottom: "15px", fontSize: "0.9rem" }}>{validationError}</p>}
 
         {isEditing ? (
           <div style={{ display: "flex", gap: "15px" }}>
-            <button onClick={handleSave} disabled={uploading || ageError} style={{ flex: 1, padding: "12px", backgroundColor: (uploading || ageError) ? "#bdc3c7" : "#2ecc71", color: "#fff", border: "none", borderRadius: "5px", cursor: (uploading || ageError) ? "not-allowed" : "pointer", fontWeight: "bold", transition: "0.3s" }}>
-              {uploading ? "ĐANG TẢI ẢNH..." : "LƯU THAY ĐỔI"}
-            </button>
-            <button onClick={() => { setIsEditing(false); setAgeError(""); }} style={{ flex: 1, padding: "12px", backgroundColor: "#e74c3c", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", transition: "0.3s" }}>
-              HỦY
-            </button>
+            <button onClick={handleSave} disabled={uploading} style={{ flex: 1, padding: "12px", backgroundColor: "#2ecc71", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>{uploading ? "ĐANG LƯU..." : "LƯU THAY ĐỔI"}</button>
+            <button onClick={() => { setIsEditing(false); setValidationError(""); }} style={{ flex: 1, padding: "12px", backgroundColor: "#e74c3c", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>HỦY</button>
           </div>
         ) : (
-          <button onClick={() => setIsEditing(true)} style={{ width: "100%", padding: "12px", backgroundColor: "#3498db", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", transition: "0.3s" }}>
-            CHỈNH SỬA THÔNG TIN
-          </button>
+          <button onClick={() => setIsEditing(true)} style={{ width: "100%", padding: "12px", backgroundColor: "#3498db", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>CHỈNH SỬA THÔNG TIN</button>
         )}
       </div>
     </div>

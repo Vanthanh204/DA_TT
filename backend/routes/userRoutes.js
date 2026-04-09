@@ -47,18 +47,18 @@ router.get("/me", verifyToken, async (req, res) => {
   }
 });
 
-// 👉 User tự cập nhật thông tin (Chỉ cho phép đổi username, age, avatar)
+// 👉 User tự cập nhật thông tin (Chỉ cho phép đổi username, birthDate, avatar)
 router.put("/me", verifyToken, async (req, res) => {
   try {
-    const { username, age, avatar } = req.body;
+    const { username, birthDate, avatar } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
-      { username, age, avatar },
-      { new: true }
+      { username, birthDate, avatar },
+      { new: true, runValidators: true } // Thêm runValidators để kiểm tra Date range
     ).select("-password");
     res.json(updatedUser);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(400).json({ message: err.message });
   }
 });
 

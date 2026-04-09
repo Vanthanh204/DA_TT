@@ -8,19 +8,33 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
   const [editData, setEditData] = useState({ username: "", age: 0, avatar: "" });
   const [uploading, setUploading] = useState(false);
   const [ageError, setAgeError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   useEffect(() => {
-    if (propUser) {
-      setUser(propUser);
-      setEditData({ 
-        username: propUser.username, 
-        age: propUser.age || 0, 
-        avatar: propUser.avatar || "" 
-      });
-    }
-  }, [propUser]);
+    const fetchUserData = async () => {
+      try {
+        const res = await API.get("/users/me");
+        const userData = res.data;
+        setUser(userData);
+        setEditData({ 
+          username: userData.username, 
+          age: userData.age || 0, 
+          avatar: userData.avatar || "" 
+        });
+        // Cập nhật lại global và local storage nếu có thay đổi
+        if (setGlobalUser) setGlobalUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+      } catch (err) {
+        console.error("Lỗi lấy thông tin user:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [setGlobalUser]);
 
   const handleAgeChange = (val) => {
     const ageVal = val === "" ? "" : parseInt(val);

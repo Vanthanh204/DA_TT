@@ -110,9 +110,10 @@ function AdminComics() {
         headers: { "Content-Type": "multipart/form-data" }
       });
       const imageUrls = uploadRes.data.imageUrls;
+      
       await API.post("/upload/create-chapter", {
         comicId: showChapterForm,
-        chapterNumber: newChapter.chapterNumber,
+        chapterNumber: Number(newChapter.chapterNumber), // Ép kiểu sang số
         title: newChapter.title,
         pages: imageUrls
       });
@@ -121,7 +122,9 @@ function AdminComics() {
       setNewChapter({ chapterNumber: 1, title: "", files: [] });
       fetchComics();
     } catch (err) {
-      alert("Lỗi khi thêm chương!");
+      console.error(err);
+      const msg = err.response?.data?.message || "Lỗi khi thêm chương!";
+      alert(msg);
     } finally {
       setIsUploading(false);
     }

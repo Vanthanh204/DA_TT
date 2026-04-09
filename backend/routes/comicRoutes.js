@@ -23,13 +23,11 @@ const deleteFromCloudinary = async (url) => {
 // 👉 API TRENDING: Top 3 truyện và Thể loại hot nhất
 router.get("/trending/top", async (req, res) => {
   try {
-    // 1. Lấy Top 3 truyện có views cao nhất
     const topComics = await Comic.find()
       .sort({ views: -1 })
       .limit(3)
       .select("title coverImage views");
 
-    // 2. Tính toán thể loại được đọc nhiều nhất
     const allComics = await Comic.find({ views: { $gt: 0 } }).populate("genres");
     
     const genreStats = {};
@@ -55,10 +53,7 @@ router.get("/trending/top", async (req, res) => {
       }
     }
 
-    res.json({ 
-      topComics: topComics || [], 
-      topGenre: topGenre || (allComics.length > 0 ? "Tổng hợp" : "") 
-    });
+    res.json({ topComics: topComics || [], topGenre });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -74,7 +69,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 👉 LẤY CHI TIẾT MỘT CHƯƠNG TRUYỆN
+// 👉 LẤY CHI TIẾT MỘT CHƯƠNG TRUYỆN (Và TĂNG VIEW cho truyện)
 router.get("/chapter/:chapterId", verifyToken, async (req, res) => {
   try {
     const chapter = await Chapter.findById(req.params.chapterId);
@@ -93,6 +88,10 @@ router.get("/chapter/:chapterId", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "Chương này hiện đang khóa. Bạn cần đạt Level 1 để đọc.", isLocked: true });
     }
 
+    // --- TĂNG VIEW CHO BỘ TRUYỆN ---
+    await Comic.findByIdAndUpdate(chapter.comicId, { $inc: { views: 1 } });
+
+    // --- CẬP NHẬT THÔNG TIN ĐỌC CỦA USER ---
     user.readCount = (user.readCount || 0) + 1;
     if (user.readCount >= 10 && user.level < 1) { user.level = 1; }
     user.readHistory = user.readHistory.filter(h => h.comic && h.comic.toString() !== chapter.comicId.toString());
@@ -140,16 +139,10 @@ router.post("/by-ids", async (req, res) => {
   }
 });
 
-// Lấy chi tiết truyện
+// 👉 LẤY CHI TIẾT TRUYỆN (Trang Detail)
 router.get("/:id", async (req, res) => {
   try {
-    // Tăng view trực tiếp bằng $inc để đảm bảo độ chính xác và nhanh chóng
-    const comic = await Comic.findByIdAndUpdate(
-      req.params.id, 
-      { $inc: { views: 1 } }, 
-      { new: true }
-    ).populate("chapters").populate("genres");
-
+    const comic = await Comic.findById(req.params.id).populate("chapters").populate("genres");
     if (!comic) return res.status(404).json({ message: "Không tìm thấy truyện" });
     res.json(comic);
   } catch (err) {

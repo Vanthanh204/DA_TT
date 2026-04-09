@@ -9,19 +9,21 @@ function Search() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
-  // Lấy các tham số từ URL
-  const searchParams = new URLSearchParams(location.search);
-  const query = searchParams.get("q");
-  const genreId = searchParams.get("genre");
-  const genreName = searchParams.get("genreName");
-
   useEffect(() => {
     const fetchResults = async () => {
       setLoading(true);
+      // Lấy các tham số từ URL ngay bên trong useEffect
+      const searchParams = new URLSearchParams(location.search);
+      const queryParam = searchParams.get("q");
+      const genreIdParam = searchParams.get("genre");
+
       try {
         let url = "/comics/search?";
-        if (query) url += `q=${query}`;
-        if (genreId) url += `&genre=${genreId}`;
+        if (queryParam) url += `q=${encodeURIComponent(queryParam)}`;
+        if (genreIdParam) {
+          if (queryParam) url += "&";
+          url += `genre=${genreIdParam}`;
+        }
         
         const res = await API.get(url);
         setComics(res.data);
@@ -32,7 +34,12 @@ function Search() {
       }
     };
     fetchResults();
-  }, [query, genreId]);
+  }, [location.search]); // Lắng nghe sự thay đổi của toàn bộ URL search
+
+  // Lấy genreName để hiển thị tiêu đề
+  const searchParams = new URLSearchParams(location.search);
+  const genreName = searchParams.get("genreName");
+  const query = searchParams.get("q");
 
   return (
     <div className="home-container">

@@ -63,18 +63,29 @@ function ComicDetail() {
   if (loading) return <div className="loading-container">Đang tải thông tin truyện...</div>;
   if (!comic) return <div className="error-container">Không tìm thấy truyện!</div>;
 
-  // Kiểm tra an toàn trước khi map chapters
   const chaptersArray = comic.chapters && Array.isArray(comic.chapters) ? comic.chapters : [];
   const sortedChapters = [...chaptersArray].sort((a, b) => a.chapterNumber - b.chapterNumber);
   
+  // Xác định 3 chương mới nhất (dựa trên chapterNumber lớn nhất)
+  const latest3ChapterNumbers = [...sortedChapters]
+    .sort((a, b) => b.chapterNumber - a.chapterNumber)
+    .slice(0, 3)
+    .map(c => c.chapterNumber);
+
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
+  const userLevel = user ? (user.level || 0) : 0;
+
   const firstChapter = sortedChapters.length > 0 ? sortedChapters[0] : null;
   const latestChapter = sortedChapters.length > 0 ? sortedChapters[sortedChapters.length - 1] : null;
 
   const handleRead = (chapterId, chapterNumber) => {
-    const userStr = localStorage.getItem("user");
-    const user = userStr ? JSON.parse(userStr) : null;
-    const userId = user ? (user._id || user.id) : "guest";
+    if (latest3ChapterNumbers.includes(chapterNumber) && userLevel < 1) {
+      alert("Chương này hiện đang khóa. Bạn cần đạt Level 1 để đọc (Đọc đủ 10 chương bất kỳ).");
+      return;
+    }
 
+    const userId = user ? (user._id || user.id) : "guest";
     localStorage.setItem(`read_history_${userId}_${id}`, JSON.stringify({ chapterId, chapterNumber }));
     navigate(`/reading/${chapterId}`);
   };
@@ -98,14 +109,24 @@ function ComicDetail() {
             )}
             
             {lastRead && (
-              <button className="btn-continue" onClick={() => handleRead(lastRead.chapterId, lastRead.chapterNumber)}>
+              <button 
+                className="btn-continue" 
+                onClick={() => handleRead(lastRead.chapterId, lastRead.chapterNumber)}
+                disabled={latest3ChapterNumbers.includes(lastRead.chapterNumber) && userLevel < 1}
+                style={{ opacity: (latest3ChapterNumbers.includes(lastRead.chapterNumber) && userLevel < 1) ? 0.5 : 1 }}
+              >
                 Đọc tiếp (Chương {lastRead.chapterNumber})
               </button>
             )}
 
             {latestChapter && (
-              <button className="btn-latest" onClick={() => handleRead(latestChapter._id, latestChapter.chapterNumber)}>
-                Mới nhất
+              <button 
+                className="btn-latest" 
+                onClick={() => handleRead(latestChapter._id, latestChapter.chapterNumber)}
+                disabled={latest3ChapterNumbers.includes(latestChapter.chapterNumber) && userLevel < 1}
+                style={{ opacity: (latest3ChapterNumbers.includes(latestChapter.chapterNumber) && userLevel < 1) ? 0.5 : 1 }}
+              >
+                {latest3ChapterNumbers.includes(latestChapter.chapterNumber) && userLevel < 1 ? "🔒 Chương mới nhất" : "Mới nhất"}
               </button>
             )}
 
@@ -124,11 +145,20 @@ function ComicDetail() {
         <h2>Danh sách chương ({sortedChapters.length})</h2>
         {sortedChapters.length > 0 ? (
           <div className="chapter-grid">
-            {sortedChapters.map((chap) => (
-              <div key={chap._id} className="chapter-item" onClick={() => handleRead(chap._id, chap.chapterNumber)}>
-                Chương {chap.chapterNumber}: {chap.title || `Chapter ${chap.chapterNumber}`}
-              </div>
-            ))}
+            {sortedChapters.map((chap) => {
+              const isLocked = latest3ChapterNumbers.includes(chap.chapterNumber) && userLevel < 1;
+              return (
+                <div 
+                  key={chap._id} 
+                  className={`chapter-item ${isLocked ? "locked" : ""}`} 
+                  onClick={() => handleRead(chap._id, chap.chapterNumber)}
+                  style={{ position: "relative", cursor: isLocked ? "not-allowed" : "pointer", opacity: isLocked ? 0.7 : 1 }}
+                >
+                  Chương {chap.chapterNumber}: {chap.title || `Chapter ${chap.chapterNumber}`}
+                  {isLocked && <i className="fas fa-lock" style={{ marginLeft: "10px", color: "#e74c3c" }}></i>}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <p className="no-chapters">Truyện hiện chưa có chương nào.</p>

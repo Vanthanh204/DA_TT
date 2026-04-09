@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Comic = require("../models/comic");
 const Chapter = require("../models/chapter");
-const { verifyAdmin } = require("../middleware/authMiddleware");
+const User = require("../models/user");
+const { verifyAdmin, verifyToken } = require("../middleware/authMiddleware");
 
 // Lấy tất cả truyện
 router.get("/", async (req, res) => {
@@ -15,12 +16,38 @@ router.get("/", async (req, res) => {
 });
 
 // 👉 LẤY CHI TIẾT MỘT CHƯƠNG TRUYỆN (Dùng cho trang đọc)
-router.get("/chapter/:chapterId", async (req, res) => {
+router.get("/chapter/:chapterId", verifyToken, async (req, res) => {
   try {
     const chapter = await Chapter.findById(req.params.chapterId);
     if (!chapter) return res.status(404).json({ message: "Không tìm thấy chương" });
 
-    // Tìm chương trước và chương sau dựa trên comicId và chapterNumber
+    // Lấy thông tin user để kiểm tra level
+    const user = await User.findById(req.user.id);
+    
+    // Kiểm tra xem chương này có nằm trong 3 chương mới nhất của bộ truyện không
+    const latestChapters = await Chapter.find({ comicId: chapter.comicId })
+      .sort({ chapterNumber: -1 })
+      .limit(3)
+      .select("_id");
+    
+    const latestIds = latestChapters.map(c => c._id.toString());
+    const isLocked = latestIds.includes(chapter._id.toString()) && user.level < 1;
+
+    if (isLocked) {
+      return res.status(403).json({ 
+        message: "Chương này hiện đang khóa. Bạn cần đạt Level 1 để đọc (Đọc đủ 10 chương bất kỳ).",
+        isLocked: true 
+      });
+    }
+
+    // Nếu đọc thành công, tăng readCount và kiểm tra level up
+    user.readCount = (user.readCount || 0) + 1;
+    if (user.readCount >= 10 && user.level < 1) {
+      user.level = 1;
+    }
+    await user.save();
+
+    // Tìm chương trước và chương sau
     const prevChapter = await Chapter.findOne({
       comicId: chapter.comicId,
       chapterNumber: { $lt: chapter.chapterNumber }
@@ -34,7 +61,9 @@ router.get("/chapter/:chapterId", async (req, res) => {
     res.json({
       ...chapter.toObject(),
       prevChapterId: prevChapter ? prevChapter._id : null,
-      nextChapterId: nextChapter ? nextChapter._id : null
+      nextChapterId: nextChapter ? nextChapter._id : null,
+      currentLevel: user.level,
+      readCount: user.readCount
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

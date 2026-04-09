@@ -9,7 +9,7 @@ const User = require("../models/user.js");
 // 👉 REGISTER USER
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, birthDate } = req.body;
 
     const existing = await User.findOne({ email });
     if (existing) {
@@ -21,14 +21,19 @@ router.post("/register", async (req, res) => {
     const user = new User({
       username,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      birthDate: birthDate || null
     });
 
     await user.save();
     res.json({ message: "Đăng ký thành công" });
 
   } catch (err) {
-    res.status(500).json(err);
+    if (err.name === "ValidationError") {
+      const messages = Object.values(err.errors).map(val => val.message);
+      return res.status(400).json({ message: messages[0] });
+    }
+    res.status(500).json({ message: "Lỗi hệ thống khi đăng ký" });
   }
 });
 

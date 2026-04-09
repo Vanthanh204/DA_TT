@@ -65,6 +65,13 @@ const UserSchema = new mongoose.Schema({
     default: 0,
     min: [0, "Số lượng chương đã đọc không được âm"]
   },
+  readHistory: [
+    {
+      comic: { type: mongoose.Schema.Types.ObjectId, ref: "Comic" },
+      chapter: { type: mongoose.Schema.Types.ObjectId, ref: "Chapter" },
+      readAt: { type: Date, default: Date.now }
+    }
+  ],
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comic" }]
 }, { timestamps: true });
 

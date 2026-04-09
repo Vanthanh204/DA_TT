@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function AdminComics() {
@@ -8,6 +9,7 @@ function AdminComics() {
   const [showChapterForm, setShowChapterForm] = useState(null); 
   const [selectedComic, setSelectedComic] = useState(null); // Truyện đang xem chi tiết
   const [editingComic, setEditingComic] = useState(null);
+  const navigate = useNavigate();
 
   const [comicData, setComicData] = useState({
     title: "", author: "", description: "", coverImage: "", genres: []
@@ -28,7 +30,6 @@ function AdminComics() {
     try {
       const res = await API.get("/comics");
       setComics(res.data);
-      // Cập nhật lại selectedComic nếu đang xem
       if (selectedComic) {
         const updated = res.data.find(c => c._id === selectedComic._id);
         setSelectedComic(updated);
@@ -158,6 +159,13 @@ function AdminComics() {
 
   return (
     <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto", fontFamily: "sans-serif" }}>
+      <button 
+        onClick={() => navigate("/admin")} 
+        style={{ marginBottom: "20px", padding: "8px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer" }}
+      >
+        ← Quay lại Dashboard
+      </button>
+
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", alignItems: "center" }}>
         <h1>Quản lý truyện</h1>
         <button onClick={() => { setShowAddForm(!showAddForm); setEditingComic(null); setComicData({title: "", author: "", description: "", coverImage: "", genres: []}); }} style={{ padding: "10px 20px", background: "#27ae60", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
@@ -233,7 +241,7 @@ function AdminComics() {
         <thead>
           <tr style={{ backgroundColor: "#f4f4f4", textAlign: "left" }}>
             <th style={{ padding: "15px", border: "1px solid #ddd" }}>Ảnh</th>
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Tên truyện</th>
+            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Tên truyện (Click để xem chương)</th>
             <th style={{ padding: "15px", border: "1px solid #ddd" }}>Tác giả</th>
             <th style={{ padding: "15px", border: "1px solid #ddd", textAlign: "center" }}>Hành động</th>
           </tr>

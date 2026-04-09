@@ -68,6 +68,15 @@ router.get("/chapter/:chapterId", verifyToken, async (req, res) => {
     if (user.readCount >= 10 && user.level < 1) {
       user.level = 1;
     }
+
+    // 👉 LƯU LỊCH SỬ ĐỌC VÀO DB
+    // Loại bỏ lịch sử cũ của truyện này (nếu có) để đưa cái mới nhất lên đầu
+    user.readHistory = user.readHistory.filter(h => h.comic.toString() !== chapter.comicId.toString());
+    user.readHistory.unshift({ comic: chapter.comicId, chapter: chapter._id, readAt: new Date() });
+    
+    // Giới hạn 30 truyện đọc gần nhất
+    if (user.readHistory.length > 30) user.readHistory.pop();
+
     await user.save();
 
     // Tìm chương trước và chương sau

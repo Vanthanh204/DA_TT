@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminComics from "./pages/AdminComics";
 import AdminUsers from "./pages/AdminUsers";
+import AdminUserHistory from "./pages/AdminUserHistory";
 import AdminGenres from "./pages/AdminGenres";
 import ComicDetail from "./pages/ComicDetail";
 import ReadingPage from "./pages/ReadingPage";
@@ -50,6 +51,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/comics" element={<AdminComics />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/users/:id/history" element={<AdminUserHistory />} />
             <Route path="/admin/genres" element={<AdminGenres />} />
           </>
         )}

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function AdminGenres() {
   const [genres, setGenres] = useState([]);
   const [newGenre, setNewGenre] = useState({ name: "", description: "" });
   const [editingGenre, setEditingGenre] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchGenres();
@@ -59,6 +61,13 @@ function AdminGenres() {
 
   return (
     <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
+      <button 
+        onClick={() => navigate("/admin")} 
+        style={{ marginBottom: "20px", padding: "8px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer" }}
+      >
+        ← Quay lại Dashboard
+      </button>
+
       <h1>Quản lý thể loại</h1>
       
       <form onSubmit={handleAddOrUpdate} style={{ marginBottom: "30px", display: "flex", flexDirection: "column", gap: "10px", background: "#fff", padding: "20px", borderRadius: "8px", border: "1px solid #ddd" }}>

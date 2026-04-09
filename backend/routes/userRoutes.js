@@ -111,4 +111,24 @@ router.delete("/:id", verifyAdmin, async (req, res) => {
   }
 });
 
+// 👉 Lấy lịch sử đọc của một user (Chỉ Admin)
+router.get("/:id/history", verifyAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .populate({
+        path: "readHistory.comic",
+        select: "title coverImage author"
+      })
+      .populate({
+        path: "readHistory.chapter",
+        select: "chapterNumber"
+      });
+    
+    if (!user) return res.status(404).json("Không tìm thấy người dùng!");
+    res.json(user.readHistory);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

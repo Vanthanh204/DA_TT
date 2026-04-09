@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function AdminUsers() {
   const [users, setUsers] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -73,11 +75,18 @@ function AdminUsers() {
 
   return (
     <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
+      <button 
+        onClick={() => navigate("/admin")} 
+        style={{ marginBottom: "20px", padding: "8px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer" }}
+      >
+        ← Quay lại Dashboard
+      </button>
+
       <h1>Quản lý người dùng</h1>
       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "20px", background: "#fff", borderRadius: "8px", overflow: "hidden" }}>
         <thead>
           <tr style={{ backgroundColor: "#f4f4f4" }}>
-            <th style={{ padding: "12px", border: "1px solid #ddd" }}>Người dùng</th>
+            <th style={{ padding: "12px", border: "1px solid #ddd" }}>Người dùng (Click để xem lịch sử)</th>
             <th style={{ padding: "12px", border: "1px solid #ddd" }}>Email</th>
             <th style={{ padding: "12px", border: "1px solid #ddd" }}>Vai trò</th>
             <th style={{ padding: "12px", border: "1px solid #ddd" }}>Level</th>
@@ -90,7 +99,10 @@ function AdminUsers() {
           {users.map((user) => (
             <tr key={user._id}>
               <td style={{ padding: "12px", border: "1px solid #ddd" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div 
+                    style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", color: "#3498db", fontWeight: "bold" }}
+                    onClick={() => navigate(`/admin/users/${user._id}/history`)}
+                >
                   <img src={user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} alt="" style={{ width: "30px", height: "30px", borderRadius: "50%" }} />
                   {user.username}
                 </div>

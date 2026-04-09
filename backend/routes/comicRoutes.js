@@ -143,11 +143,14 @@ router.post("/by-ids", async (req, res) => {
 // Lấy chi tiết truyện
 router.get("/:id", async (req, res) => {
   try {
-    const comic = await Comic.findById(req.params.id).populate("chapters").populate("genres");
+    // Tăng view trực tiếp bằng $inc để đảm bảo độ chính xác và nhanh chóng
+    const comic = await Comic.findByIdAndUpdate(
+      req.params.id, 
+      { $inc: { views: 1 } }, 
+      { new: true }
+    ).populate("chapters").populate("genres");
+
     if (!comic) return res.status(404).json({ message: "Không tìm thấy truyện" });
-    // Tăng view mỗi khi xem chi tiết
-    comic.views = (comic.views || 0) + 1;
-    await comic.save();
     res.json(comic);
   } catch (err) {
     res.status(500).json({ message: err.message });

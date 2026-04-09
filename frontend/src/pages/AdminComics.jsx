@@ -233,7 +233,7 @@ function AdminComics() {
         <thead>
           <tr style={{ backgroundColor: "#f4f4f4", textAlign: "left" }}>
             <th style={{ padding: "15px", border: "1px solid #ddd" }}>Ảnh</th>
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Tên truyện (Click để xem chương)</th>
+            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Tên truyện</th>
             <th style={{ padding: "15px", border: "1px solid #ddd" }}>Tác giả</th>
             <th style={{ padding: "15px", border: "1px solid #ddd", textAlign: "center" }}>Hành động</th>
           </tr>

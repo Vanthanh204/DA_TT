@@ -31,4 +31,4 @@ const uploadCloud = multer({
     limits: { fileSize: 10 * 1024 * 1024 } // Giới hạn 10MB mỗi file
 });
 
-module.exports = uploadCloud;
+module.exports = { uploadCloud, cloudinary };

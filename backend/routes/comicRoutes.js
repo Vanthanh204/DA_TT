@@ -4,6 +4,22 @@ const Comic = require("../models/comic");
 const Chapter = require("../models/chapter");
 const User = require("../models/user");
 const { verifyAdmin, verifyToken } = require("../middleware/authMiddleware");
+const { cloudinary } = require("../config/cloudinary");
+
+// Hàm hỗ trợ xóa ảnh trên Cloudinary từ URL
+const deleteFromCloudinary = async (url) => {
+  if (!url) return;
+  try {
+    // Tách public_id từ URL (Ví dụ: .../comic_web/id.jpg -> comic_web/id)
+    const parts = url.split("/");
+    const fileName = parts[parts.length - 1].split(".")[0];
+    const folder = "comic_web"; // Thư mục đã cấu hình
+    const publicId = `${folder}/${fileName}`;
+    await cloudinary.uploader.destroy(publicId);
+  } catch (err) {
+    console.error("Lỗi xóa ảnh Cloudinary:", err);
+  }
+};
 
 // Lấy tất cả truyện
 router.get("/", async (req, res) => {
@@ -125,6 +141,11 @@ router.get("/:id", async (req, res) => {
 // 👉 SỬA TRUYỆN
 router.put("/:id", verifyAdmin, async (req, res) => {
   try {
+    const oldComic = await Comic.findById(req.params.id);
+    // Nếu đổi ảnh bìa mới, xóa ảnh cũ trên Cloudinary
+    if (req.body.coverImage && oldComic.coverImage && req.body.coverImage !== oldComic.coverImage) {
+      await deleteFromCloudinary(oldComic.coverImage);
+    }
     const updatedComic = await Comic.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updatedComic);
   } catch (err) {
@@ -132,12 +153,31 @@ router.put("/:id", verifyAdmin, async (req, res) => {
   }
 });
 
-// 👉 XÓA TRUYỆN (Và tất cả chương của nó)
+// 👉 XÓA TRUYỆN (Và tất cả chương & ảnh liên quan)
 router.delete("/:id", verifyAdmin, async (req, res) => {
   try {
+    const comic = await Comic.findById(req.params.id).populate("chapters");
+    if (!comic) return res.status(404).json({ message: "Không tìm thấy truyện" });
+
+    // 1. Xóa ảnh bìa truyện trên Cloudinary
+    await deleteFromCloudinary(comic.coverImage);
+
+    // 2. Lặp qua tất cả chương để xóa ảnh các trang trên Cloudinary
+    if (comic.chapters && comic.chapters.length > 0) {
+      for (const chapter of comic.chapters) {
+        if (chapter.pages && chapter.pages.length > 0) {
+          for (const pageUrl of chapter.pages) {
+            await deleteFromCloudinary(pageUrl);
+          }
+        }
+      }
+    }
+
+    // 3. Xóa dữ liệu trong Database
     await Chapter.deleteMany({ comicId: req.params.id });
     await Comic.findByIdAndDelete(req.params.id);
-    res.json({ message: "Xóa truyện và các chương thành công!" });
+
+    res.json({ message: "Xóa truyện và toàn bộ ảnh trên Cloudinary thành công!" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -153,19 +193,26 @@ router.put("/chapter/:chapterId", verifyAdmin, async (req, res) => {
   }
 });
 
-// 👉 XÓA CHƯƠNG
+// 👉 XÓA CHƯƠNG (Xóa luôn ảnh các trang trên Cloudinary)
 router.delete("/chapter/:chapterId", verifyAdmin, async (req, res) => {
   try {
     const chapter = await Chapter.findById(req.params.chapterId);
     if (!chapter) return res.status(404).json({ message: "Không tìm thấy chương" });
 
-    // Xóa ID chương khỏi danh sách chương của Comic
+    // 1. Xóa tất cả ảnh các trang của chương này trên Cloudinary
+    if (chapter.pages && chapter.pages.length > 0) {
+      for (const pageUrl of chapter.pages) {
+        await deleteFromCloudinary(pageUrl);
+      }
+    }
+
+    // 2. Xóa liên kết trong Comic
     await Comic.findByIdAndUpdate(chapter.comicId, { $pull: { chapters: chapter._id } });
     
-    // Xóa chương
+    // 3. Xóa chương trong DB
     await Chapter.findByIdAndDelete(req.params.chapterId);
     
-    res.json({ message: "Xóa chương thành công!" });
+    res.json({ message: "Xóa chương và các ảnh liên quan thành công!" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

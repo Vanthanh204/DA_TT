@@ -12,23 +12,34 @@ function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const [comicsRes, trendingRes] = await Promise.all([
-          API.get("/comics"),
-          API.get("/comics/trending/top")
-        ]);
-        
-        // Đảm bảo lấy đúng mảng truyện từ API
-        setComics(Array.isArray(comicsRes.data) ? comicsRes.data : []);
-        setTrending(trendingRes.data);
+        // Lấy danh sách truyện chính
+        const comicsRes = await API.get("/comics");
+        if (comicsRes.data && Array.isArray(comicsRes.data)) {
+          setComics(comicsRes.data);
+        }
 
+        // Lấy dữ liệu trending riêng biệt (không dùng Promise.all để tránh lỗi kéo theo)
+        try {
+          const trendingRes = await API.get("/comics/trending/top");
+          setTrending(trendingRes.data);
+        } catch (tErr) {
+          console.error("Lỗi lấy trending:", tErr);
+        }
+
+        // Lấy danh sách yêu thích nếu có token
         const token = localStorage.getItem("token");
         if (token) {
-          const favRes = await API.get("/users/favorites/list");
-          setFavorites(Array.isArray(favRes.data) ? favRes.data : []);
+          try {
+            const favRes = await API.get("/users/favorites/list");
+            if (Array.isArray(favRes.data)) setFavorites(favRes.data);
+          } catch (fErr) {
+            console.error("Lỗi lấy yêu thích:", fErr);
+          }
         }
       } catch (err) {
-        console.error("Lỗi lấy dữ liệu:", err);
+        console.error("Lỗi tổng thể:", err);
       } finally {
         setLoading(false);
       }
@@ -89,33 +100,35 @@ function Home() {
                 />
               ))
             ) : (
-              <p>Chưa có truyện nào trong hệ thống.</p>
+              <p style={{ padding: "20px", color: "#666" }}>Chưa có truyện nào trong hệ thống.</p>
             )}
           </div>
         </div>
 
         <aside className="sidebar">
-          <div className="sidebar-section">
-            <h3>Top Trending</h3>
-            <div className="top-list">
-              {trending.topComics && trending.topComics.map((comic, i) => (
-                <Link to={`/comic/${comic._id}`} key={comic._id} className="trending-sidebar-item" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px", textDecoration: "none", color: "inherit" }}>
-                  <span className="rank" style={{ fontSize: "1.2rem", fontWeight: "bold", color: i === 0 ? "#f1c40f" : "#95a5a6", width: "25px" }}>{i + 1}</span>
-                  <img src={comic.coverImage} alt="" style={{ width: "45px", height: "60px", objectFit: "cover", borderRadius: "4px" }} />
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: "0.9rem" }}>{comic.title}</h4>
-                    <p style={{ margin: 0, fontSize: "0.8rem", color: "#7f8c8d" }}>{comic.views?.toLocaleString() || 0} lượt xem</p>
-                  </div>
-                </Link>
-              ))}
+          {trending.topComics && trending.topComics.length > 0 && (
+            <div className="sidebar-section">
+              <h3>Top Trending</h3>
+              <div className="top-list">
+                {trending.topComics.map((comic, i) => (
+                  <Link to={`/comic/${comic._id}`} key={comic._id} className="trending-sidebar-item" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px", textDecoration: "none", color: "inherit" }}>
+                    <span className="rank" style={{ fontSize: "1.2rem", fontWeight: "bold", color: i === 0 ? "#f1c40f" : "#95a5a6", width: "25px" }}>{i + 1}</span>
+                    <img src={comic.coverImage} alt="" style={{ width: "45px", height: "60px", objectFit: "cover", borderRadius: "4px" }} />
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: "0.9rem" }}>{comic.title}</h4>
+                      <p style={{ margin: 0, fontSize: "0.8rem", color: "#7f8c8d" }}>{comic.views?.toLocaleString() || 0} lượt xem</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {trending.topGenre && (
             <div className="sidebar-section">
               <h3>Thể loại phổ biến</h3>
               <div className="tags">
-                <span style={{ background: "#eee", color: "#333", padding: "8px 15px", borderRadius: "20px", fontWeight: "bold", display: "inline-block" }}>
+                <span style={{ background: "#eee", color: "#333", padding: "8px 15px", borderRadius: "20px", fontWeight: "bold", display: "inline-block", fontSize: "0.85rem" }}>
                   {trending.topGenre.toUpperCase()}
                 </span>
               </div>

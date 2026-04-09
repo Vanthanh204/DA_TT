@@ -31,12 +31,12 @@ function AdminUserHistory() {
     <div style={{ padding: "40px", maxWidth: "1000px", margin: "0 auto" }}>
       <button 
         onClick={() => navigate(-1)} 
-        style={{ marginBottom: "20px", padding: "8px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer" }}
+        style={{ marginBottom: "20px", padding: "10px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer", fontSize: "1.2rem" }}
       >
-        ← Quay lại quản lý người dùng
+        ←
       </button>
 
-      <h1>Lịch sử đọc của người dùng</h1>
+      <h1>Lịch sử đọc</h1>
       
       {loading ? (
         <p>Đang tải...</p>

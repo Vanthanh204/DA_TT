@@ -40,23 +40,34 @@ function AdminUsers() {
     }
   };
 
-  const handleUpdateLevel = async (id, currentLevel, delta) => {
-    try {
-      const newLevel = Math.max(0, currentLevel + delta);
-      await API.put(`/users/${id}`, { level: newLevel });
-      setUsers(users.map(u => u._id === id ? { ...u, level: newLevel } : u));
-    } catch (err) {
-      alert("Lỗi cập nhật level!");
-    }
+  const handleUpdateLevel = (id, delta) => {
+    setUsers(users.map(u => {
+      if (u._id === id) {
+        return { ...u, level: Math.max(0, (u.level || 0) + delta), isChanged: true };
+      }
+      return u;
+    }));
   };
 
-  const handleToggleRole = async (id, currentRole) => {
+  const handleToggleRole = (id) => {
+    setUsers(users.map(u => {
+      if (u._id === id) {
+        return { ...u, role: u.role === "admin" ? "user" : "admin", isChanged: true };
+      }
+      return u;
+    }));
+  };
+
+  const handleSaveUser = async (user) => {
     try {
-      const newRole = currentRole === "admin" ? "user" : "admin";
-      await API.put(`/users/${id}`, { role: newRole });
-      setUsers(users.map(u => u._id === id ? { ...u, role: newRole } : u));
+      await API.put(`/users/${user._id}`, { 
+        level: user.level, 
+        role: user.role 
+      });
+      setUsers(users.map(u => u._id === user._id ? { ...u, isChanged: false } : u));
+      alert(`Đã lưu thay đổi cho ${user.username}!`);
     } catch (err) {
-      alert("Lỗi cập nhật vai trò!");
+      alert("Lỗi khi lưu thay đổi!");
     }
   };
 
@@ -87,7 +98,7 @@ function AdminUsers() {
               <td style={{ padding: "12px", border: "1px solid #ddd" }}>{user.email}</td>
               <td style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center" }}>
                 <button 
-                  onClick={() => handleToggleRole(user._id, user.role)}
+                  onClick={() => handleToggleRole(user._id)}
                   style={{ padding: "4px 8px", background: user.role === "admin" ? "#9b59b6" : "#bdc3c7", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}
                 >
                   {user.role.toUpperCase()}
@@ -95,9 +106,9 @@ function AdminUsers() {
               </td>
               <td style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-                  <button onClick={() => handleUpdateLevel(user._id, user.level, -1)} style={{ width: "25px", height: "25px", borderRadius: "50%", border: "1px solid #ddd", cursor: "pointer" }}>-</button>
+                  <button onClick={() => handleUpdateLevel(user._id, -1)} style={{ width: "25px", height: "25px", borderRadius: "50%", border: "1px solid #ddd", cursor: "pointer" }}>-</button>
                   <span style={{ fontWeight: "bold", color: "#e67e22" }}>{user.level || 0}</span>
-                  <button onClick={() => handleUpdateLevel(user._id, user.level, 1)} style={{ width: "25px", height: "25px", borderRadius: "50%", border: "1px solid #ddd", cursor: "pointer" }}>+</button>
+                  <button onClick={() => handleUpdateLevel(user._id, 1)} style={{ width: "25px", height: "25px", borderRadius: "50%", border: "1px solid #ddd", cursor: "pointer" }}>+</button>
                 </div>
               </td>
               <td style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center" }}>{user.readCount || 0}</td>
@@ -107,18 +118,27 @@ function AdminUsers() {
                 </span>
               </td>
               <td style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center" }}>
-                <button 
-                  onClick={() => handleToggleStatus(user._id)}
-                  style={{ marginRight: "10px", padding: "5px 10px", backgroundColor: user.isLocked ? "#2ecc71" : "#f39c12", color: "#fff", border: "none", borderRadius: "3px", cursor: "pointer" }}
-                >
-                  {user.isLocked ? "Mở khóa" : "Khóa"}
-                </button>
-                <button 
-                  onClick={() => handleDelete(user._id)}
-                  style={{ color: "#fff", backgroundColor: "#e74c3c", border: "none", padding: "5px 10px", borderRadius: "3px", cursor: "pointer" }}
-                >
-                  Xóa
-                </button>
+                <div style={{ display: "flex", gap: "5px", justifyContent: "center" }}>
+                  <button 
+                    onClick={() => handleSaveUser(user)}
+                    disabled={!user.isChanged}
+                    style={{ padding: "5px 10px", backgroundColor: user.isChanged ? "#2ecc71" : "#bdc3c7", color: "#fff", border: "none", borderRadius: "3px", cursor: user.isChanged ? "pointer" : "default" }}
+                  >
+                    Lưu
+                  </button>
+                  <button 
+                    onClick={() => handleToggleStatus(user._id)}
+                    style={{ padding: "5px 10px", backgroundColor: user.isLocked ? "#3498db" : "#f39c12", color: "#fff", border: "none", borderRadius: "3px", cursor: "pointer" }}
+                  >
+                    {user.isLocked ? "Mở" : "Khóa"}
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(user._id)}
+                    style={{ color: "#fff", backgroundColor: "#e74c3c", border: "none", padding: "5px 10px", borderRadius: "3px", cursor: "pointer" }}
+                  >
+                    Xóa
+                  </button>
+                </div>
               </td>
             </tr>
           ))}

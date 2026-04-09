@@ -31,7 +31,14 @@ router.get("/chapter/:chapterId", verifyToken, async (req, res) => {
       .select("_id");
     
     const latestIds = latestChapters.map(c => c._id.toString());
-    const isLocked = latestIds.includes(chapter._id.toString()) && user.level < 1;
+    
+    // ĐIỀU KIỆN MỞ KHÓA: 
+    // 1. Là Admin (user.role === "admin")
+    // 2. Không phải chương mới nhất
+    // 3. Đã đạt Level >= 1
+    const isLocked = latestIds.includes(chapter._id.toString()) && 
+                     user.role !== "admin" && 
+                     user.level < 1;
 
     if (isLocked) {
       return res.status(403).json({ 

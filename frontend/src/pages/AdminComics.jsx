@@ -161,9 +161,10 @@ function AdminComics() {
     <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto", fontFamily: "sans-serif" }}>
       <button 
         onClick={() => navigate("/admin")} 
-        style={{ marginBottom: "20px", padding: "8px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer" }}
+        style={{ marginBottom: "20px", padding: "10px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer", fontSize: "1.2rem" }}
+        title="Quay lại"
       >
-        ← Quay lại Dashboard
+        ←
       </button>
 
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", alignItems: "center" }}>

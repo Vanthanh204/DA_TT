@@ -77,16 +77,17 @@ function AdminUsers() {
     <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
       <button 
         onClick={() => navigate("/admin")} 
-        style={{ marginBottom: "20px", padding: "8px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer" }}
+        style={{ marginBottom: "20px", padding: "10px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer", fontSize: "1.2rem" }}
+        title="Quay lại"
       >
-        ← Quay lại Dashboard
+        ←
       </button>
 
       <h1>Quản lý người dùng</h1>
       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "20px", background: "#fff", borderRadius: "8px", overflow: "hidden" }}>
         <thead>
           <tr style={{ backgroundColor: "#f4f4f4" }}>
-            <th style={{ padding: "12px", border: "1px solid #ddd" }}>Người dùng (Click để xem lịch sử)</th>
+            <th style={{ padding: "12px", border: "1px solid #ddd" }}>Người dùng </th>
             <th style={{ padding: "12px", border: "1px solid #ddd" }}>Email</th>
             <th style={{ padding: "12px", border: "1px solid #ddd" }}>Vai trò</th>
             <th style={{ padding: "12px", border: "1px solid #ddd" }}>Level</th>

@@ -63,9 +63,10 @@ function AdminGenres() {
     <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
       <button 
         onClick={() => navigate("/admin")} 
-        style={{ marginBottom: "20px", padding: "8px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer" }}
+        style={{ marginBottom: "20px", padding: "10px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer", fontSize: "1.2rem" }}
+        title="Quay lại"
       >
-        ← Quay lại Dashboard
+        ←
       </button>
 
       <h1>Quản lý thể loại</h1>

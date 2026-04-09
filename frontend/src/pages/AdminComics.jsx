@@ -101,30 +101,37 @@ function AdminComics() {
     e.preventDefault();
     if (newChapter.files.length === 0) return alert("Vui lòng chọn ảnh cho chương!");
     setIsUploading(true);
+    
     try {
-      const formData = new FormData();
-      for (let i = 0; i < newChapter.files.length; i++) {
-        formData.append("images", newChapter.files[i]);
+      const files = Array.from(newChapter.files);
+      const chunkSize = 15; // Mỗi lần upload 15 ảnh song song
+      let allImageUrls = [];
+
+      for (let i = 0; i < files.length; i += chunkSize) {
+        const chunk = files.slice(i, i + chunkSize);
+        const formData = new FormData();
+        chunk.forEach(file => formData.append("images", file));
+
+        const res = await API.post("/upload/chapter-pages", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        allImageUrls = [...allImageUrls, ...res.data.imageUrls];
       }
-      const uploadRes = await API.post("/upload/chapter-pages", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-      const imageUrls = uploadRes.data.imageUrls;
-      
+
       await API.post("/upload/create-chapter", {
         comicId: showChapterForm,
-        chapterNumber: Number(newChapter.chapterNumber), // Ép kiểu sang số
+        chapterNumber: Number(newChapter.chapterNumber),
         title: newChapter.title,
-        pages: imageUrls
+        pages: allImageUrls
       });
+
       alert("Thêm chương thành công!");
       setShowChapterForm(null);
       setNewChapter({ chapterNumber: 1, title: "", files: [] });
       fetchComics();
     } catch (err) {
       console.error(err);
-      const msg = err.response?.data?.message || "Lỗi khi thêm chương!";
-      alert(msg);
+      alert(err.response?.data?.message || "Lỗi khi tải ảnh hoặc tạo chương!");
     } finally {
       setIsUploading(false);
     }

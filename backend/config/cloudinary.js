@@ -1,6 +1,7 @@
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
+const crypto = require("crypto");
 require('dotenv').config();
 
 cloudinary.config({
@@ -13,11 +14,21 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "comic_web", 
-    format: async (req, file) => "jpg", // Tự động chuyển mọi thứ sang jpg để đảm bảo Android gửi gì cũng nhận được
-    public_id: (req, file) => Date.now() + "-" + file.originalname.split('.')[0],
+    format: async (req, file) => "jpg",
+    // Tạo tên file duy nhất bằng hash để tránh trùng lặp khi up nhiều ảnh nhanh
+    public_id: (req, file) => {
+        const uniqueSuffix = crypto.randomBytes(4).toString('hex');
+        const originalName = file.originalname.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_');
+        return `${Date.now()}-${uniqueSuffix}-${originalName}`;
+    },
+    // Tối ưu hóa tốc độ xử lý trên Cloudinary
+    transformation: [{ quality: "auto", fetch_format: "auto" }]
   },
 });
 
-const uploadCloud = multer({ storage });
+const uploadCloud = multer({ 
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // Giới hạn 10MB mỗi file
+});
 
 module.exports = uploadCloud;

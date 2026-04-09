@@ -70,13 +70,23 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
   };
 
   const handleSave = async () => {
+    // Đóng bàn phím trên mobile
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     const ageNum = parseInt(editData.age);
     if (isNaN(ageNum) || ageNum < 6 || ageNum > 100) {
-      setAgeError("Vui lòng nhập tuổi hợp lệ (6-100) trước khi lưu!");
+      const errorMsg = "Vui lòng nhập tuổi hợp lệ (6-100) trước khi lưu!";
+      setAgeError(errorMsg);
+      alert(errorMsg); // Alert để người dùng mobile dễ thấy
       return;
     }
 
     try {
+      setIsEditing(false); // Đóng mode edit trước để tránh double click
+      setUploading(true);
+      
       const res = await API.put("/users/me", {
         username: editData.username,
         age: ageNum,
@@ -84,24 +94,17 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
       });
       
       const updatedUser = res.data;
-      
-      // 1. Cập nhật state cục bộ của trang Profile
       setUser(updatedUser);
-      
-      // 2. Cập nhật state TOÀN CỤC của ứng dụng (giúp Navbar cập nhật ngay)
-      if (setGlobalUser) {
-        setGlobalUser(updatedUser);
-      }
-      
-      // 3. Cập nhật localStorage để lưu phiên làm việc
+      if (setGlobalUser) setGlobalUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
       
-      setIsEditing(false);
       alert("Cập nhật thành công!");
-      
     } catch (err) {
       console.error("Lỗi cập nhật:", err.response?.data || err.message);
-      alert("Không thể cập nhật thông tin!");
+      setIsEditing(true); // Mở lại nếu lỗi
+      alert("Không thể cập nhật: " + (err.response?.data?.message || "Lỗi kết nối"));
+    } finally {
+      setUploading(false);
     }
   };
 

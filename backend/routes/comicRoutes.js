@@ -60,7 +60,8 @@ router.get("/trending/top", async (req, res) => {
   }
 });
 
-// Lấy tất cả truyện (giữ nguyên bên dưới)
+// Lấy tất cả truyện
+router.get("/", async (req, res) => {
   try {
     const comics = await Comic.find().populate("chapters").populate("genres");
     res.json(comics);

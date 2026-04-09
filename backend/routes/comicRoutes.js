@@ -21,8 +21,46 @@ const deleteFromCloudinary = async (url) => {
   }
 };
 
-// Lấy tất cả truyện
-router.get("/", async (req, res) => {
+// 👉 API TRENDING: Top 3 truyện và Thể loại hot nhất
+router.get("/trending/top", async (req, res) => {
+  try {
+    // 1. Lấy Top 3 truyện có views cao nhất
+    const topComics = await Comic.find()
+      .sort({ views: -1 })
+      .limit(3)
+      .select("title coverImage views");
+
+    // 2. Tính toán thể loại được đọc nhiều nhất
+    // Lấy tất cả truyện có views > 0 và populate thể loại
+    const allComics = await Comic.find({ views: { $gt: 0 } }).populate("genres");
+    
+    const genreStats = {};
+    allComics.forEach(comic => {
+      comic.genres.forEach(genre => {
+        if (!genreStats[genre.name]) {
+          genreStats[genre.name] = 0;
+        }
+        genreStats[genre.name] += comic.views;
+      });
+    });
+
+    // Tìm thể loại có tổng views cao nhất
+    let topGenre = "Đang cập nhật";
+    let maxViews = -1;
+    for (const [name, views] of Object.entries(genreStats)) {
+      if (views > maxViews) {
+        maxViews = views;
+        topGenre = name;
+      }
+    }
+
+    res.json({ topComics, topGenre });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Lấy tất cả truyện (giữ nguyên bên dưới)
   try {
     const comics = await Comic.find().populate("chapters").populate("genres");
     res.json(comics);

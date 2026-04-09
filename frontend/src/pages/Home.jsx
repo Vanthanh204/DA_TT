@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import ComicCard from "../components/ComicCard";
 import API from "../services/api";
 import "../styles/home.css";
@@ -6,13 +7,19 @@ import "../styles/home.css";
 function Home() {
   const [comics, setComics] = useState([]);
   const [favorites, setFavorites] = useState([]);
+  const [trending, setTrending] = useState({ topComics: [], topGenre: "Đang cập nhật" });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await API.get("/comics");
-        setComics(res.data);
+        const [comicsRes, trendingRes] = await Promise.all([
+          API.get("/comics"),
+          API.get("/comics/trending/top")
+        ]);
+        
+        setComics(comicsRes.data);
+        setTrending(trendingRes.data);
 
         const token = localStorage.getItem("token");
         if (token) {
@@ -27,8 +34,6 @@ function Home() {
     };
     fetchData();
   }, []);
-
-  const topComics = ["Solo Leveling", "One Piece", "Jujutsu Kaisen"];
 
   if (loading) return <div className="loading">Đang tải truyện...</div>;
 
@@ -91,26 +96,23 @@ function Home() {
         <aside className="sidebar">
           <div className="sidebar-section">
             <h3>Top Trending</h3>
-            <ul className="top-list">
-              {topComics.map((title, i) => (
-                <li key={i}>
-                  <span className="rank">{i + 1}</span>
-                  <span className="top-title">{title}</span>
-                </li>
+            <div className="top-list">
+              {trending.topComics.map((comic, i) => (
+                <Link to={`/comic/${comic._id}`} key={comic._id} className="trending-sidebar-item" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px", textDecoration: "none", color: "inherit" }}>
+                  <span className="rank" style={{ fontSize: "1.2rem", fontWeight: "bold", color: i === 0 ? "#f1c40f" : "#95a5a6", width: "25px" }}>{i + 1}</span>
+                  <img src={comic.coverImage} alt="" style={{ width: "45px", height: "60px", objectFit: "cover", borderRadius: "4px" }} />
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: "0.9rem" }}>{comic.title}</h4>
+                    <p style={{ margin: 0, fontSize: "0.8rem", color: "#7f8c8d" }}>{comic.views.toLocaleString()} lượt xem</p>
+                  </div>
+                </Link>
               ))}
-            </ul>
+            </div>
           </div>
 
-          <div className="sidebar-section">
-            <h3>Thể loại phổ biến</h3>
-            <div className="tags">
-              <span>Action</span>
-              <span>Adventure</span>
-              <span>Fantasy</span>
-              <span>Comedy</span>
-              <span>Horror</span>
-              <span>Romance</span>
-            </div>
+          <div className="sidebar-section" style={{ background: "linear-gradient(135deg, #3498db, #2980b9)", color: "#fff", padding: "20px", borderRadius: "10px" }}>
+            <h3 style={{ marginTop: 0, fontSize: "1rem", opacity: 0.9 }}>THỂ LOẠI HOT NHẤT</h3>
+            <h2 style={{ margin: 0, fontSize: "1.8rem", textTransform: "uppercase" }}>{trending.topGenre}</h2>
           </div>
         </aside>
       </div>

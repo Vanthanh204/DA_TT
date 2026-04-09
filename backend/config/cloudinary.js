@@ -12,8 +12,9 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "comic_web", // Tên thư mục trên Cloudinary của bạn
-    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+    folder: "comic_web", 
+    format: async (req, file) => "jpg", // Tự động chuyển mọi thứ sang jpg để đảm bảo Android gửi gì cũng nhận được
+    public_id: (req, file) => Date.now() + "-" + file.originalname.split('.')[0],
   },
 });
 

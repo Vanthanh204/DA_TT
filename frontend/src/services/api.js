@@ -1,7 +1,15 @@
 import axios from "axios";
 
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  
+  // Nếu đang chạy môi trường phát triển, lấy hostname của máy đang chạy (để hỗ trợ mobile trong cùng mạng LAN)
+  const hostname = window.location.hostname;
+  return `http://${hostname}:5000/api`;
+};
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: getBaseURL(),
 });
 
 // Thêm token vào header mỗi khi gửi request (nếu có)

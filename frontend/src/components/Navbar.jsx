@@ -9,6 +9,7 @@ function Navbar({ user, onLogout }) {
   const [genres, setGenres] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // Thêm state cho mobile menu
+  const [isMobileGenresOpen, setIsMobileGenresOpen] = useState(false); // State cho genres trên mobile
   const navigate = useNavigate();
   const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
@@ -159,14 +160,29 @@ function Navbar({ user, onLogout }) {
           
           <div className="mobile-only-links">
             <div className="mobile-genres">
-              <span className="mobile-label">Thể loại:</span>
-              <div className="mobile-genres-list">
-                {genres.slice(0, 8).map(g => (
-                  <Link key={g._id} to={`/search?genre=${g._id}&genreName=${g.name}`} onClick={() => setIsMenuOpen(false)}>
-                    {g.name}
-                  </Link>
-                ))}
+              <div 
+                className="mobile-genres-header" 
+                onClick={() => setIsMobileGenresOpen(!isMobileGenresOpen)}
+              >
+                <span className="mobile-label">
+                  <i className="fas fa-tags"></i> Thể loại
+                </span>
+                <i className={`fas fa-chevron-${isMobileGenresOpen ? "up" : "down"}`}></i>
               </div>
+              
+              {isMobileGenresOpen && (
+                <div className="mobile-genres-list">
+                  {genres.map(g => (
+                    <Link 
+                      key={g._id} 
+                      to={`/search?genre=${g._id}&genreName=${g.name}`} 
+                      onClick={() => { setIsMenuOpen(false); setIsMobileGenresOpen(false); }}
+                    >
+                      {g.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
             <Link to="/history"><i className="fas fa-history"></i> Lịch sử</Link>
             <Link to="/favorites"><i className="fas fa-heart"></i> Yêu thích</Link>

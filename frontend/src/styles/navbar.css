@@ -368,6 +368,14 @@
     gap: 8px;
   }
 
+  .mobile-genres-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 5px 0;
+  }
+
   .mobile-label {
     font-size: 0.85rem;
     color: #7f8c8d;

@@ -14,7 +14,12 @@ function ComicCard({ comic }) {
       </div>
       <div className="comic-info">
         <h3 className="comic-title">{comic.title}</h3>
-        <p className="comic-status">{comic.status || "Đang cập nhật"}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p className="comic-status">{comic.status || "Đang cập nhật"}</p>
+          <span style={{ fontSize: "0.8rem", color: "#7f8c8d" }}>
+            <i className="fas fa-eye"></i> {comic.views?.toLocaleString() || 0}
+          </span>
+        </div>
       </div>
     </Link>
   );

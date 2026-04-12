@@ -157,6 +157,24 @@ function Navbar({ user, onLogout }) {
         <div className={`menu ${isMenuOpen ? "open" : ""}`}>
           <Link to="/">Trang chủ</Link>
           
+          <div className="mobile-only-links">
+            <div className="mobile-genres">
+              <span className="mobile-label">Thể loại:</span>
+              <div className="mobile-genres-list">
+                {genres.slice(0, 8).map(g => (
+                  <Link key={g._id} to={`/search?genre=${g._id}&genreName=${g.name}`} onClick={() => setIsMenuOpen(false)}>
+                    {g.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <Link to="/history"><i className="fas fa-history"></i> Lịch sử</Link>
+            <Link to="/favorites"><i className="fas fa-heart"></i> Yêu thích</Link>
+            {user && (
+              <span className="mobile-level"><i className="fas fa-layer-group"></i> Cấp độ: {user.level || 0}</span>
+            )}
+          </div>
+
           {/* Hiển thị link Admin nếu là admin */}
           {user?.role === "admin" && (
             <Link to="/admin" className="admin-link">Quản trị</Link>

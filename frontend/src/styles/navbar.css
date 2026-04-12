@@ -243,6 +243,10 @@
 
 .menu a:hover { color: #3498db; }
 
+.mobile-only-links {
+  display: none; /* Ẩn trên desktop */
+}
+
 .admin-link { color: #e67e22 !important; font-weight: bold; }
 
 .user-info { display: flex; align-items: center; gap: 15px; }
@@ -347,6 +351,47 @@
 
   .menu.open {
     display: flex;
+  }
+
+  .mobile-only-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 0;
+    border-top: 1px solid #333;
+  }
+
+  .mobile-genres {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobile-label {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    font-weight: bold;
+  }
+
+  .mobile-genres-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+
+  .mobile-genres-list a {
+    font-size: 0.8rem !important;
+    background: #333;
+    padding: 5px !important;
+    text-align: center;
+    border-radius: 4px;
+  }
+
+  .mobile-level {
+    font-size: 0.9rem;
+    color: #f1c40f;
+    font-weight: bold;
   }
 
   .user-info {

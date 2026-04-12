@@ -127,19 +127,20 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
   if (!user) return <div style={{padding: '100px', textAlign: 'center'}}>Bạn cần đăng nhập.</div>;
 
   return (
-    <div className="profile-page" style={{ padding: "40px", maxWidth: "800px", margin: "0 auto", backgroundColor: "#f4f4f4", minHeight: "80vh" }}>
-      <h2 style={{ color: "#333", marginBottom: "20px" }}>Thông tin cá nhân</h2>
-      <div style={{ background: "#fff", padding: "30px", borderRadius: "10px", boxShadow: "0 4px 15px rgba(0,0,0,0.1)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "30px" }}>
-          <div style={{ position: "relative" }}>
+    <div className="profile-page-container">
+      <div className="profile-card">
+        <h2 className="profile-title">Thông tin cá nhân</h2>
+        
+        <div className="profile-header-info">
+          <div className="avatar-wrapper">
             <img 
               src={isEditing ? (editData.avatar || DEFAULT_AVATAR) : (user.avatar || DEFAULT_AVATAR)} 
               alt="Avatar" 
               onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
-              style={{ width: "120px", height: "120px", borderRadius: "50%", objectFit: "cover", border: "3px solid #3498db" }} 
+              className="profile-avatar-img"
             />
             {isEditing && (
-              <label style={{ position: "absolute", bottom: "5px", right: "5px", background: "#3498db", color: "#fff", padding: "8px", borderRadius: "50%", cursor: "pointer", fontSize: "0.9rem" }}>
+              <label className="avatar-upload-label">
                 📷<input 
                     type="file" 
                     name="image"
@@ -150,50 +151,198 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
               </label>
             )}
           </div>
-          <div>
+          <div className="user-title-info">
             {isEditing ? (
-              <input type="text" value={editData.username} onChange={(e) => setEditData({...editData, username: e.target.value})} style={{ fontSize: "1.5rem", padding: "5px 10px", borderRadius: "5px", border: "1px solid #ddd", width: "100%" }} />
+              <input type="text" value={editData.username} onChange={(e) => setEditData({...editData, username: e.target.value})} className="edit-username-input" />
             ) : (
-              <h3 style={{ margin: 0, fontSize: "1.8rem", color: "#2c3e50" }}>{user.username}</h3>
+              <h3 className="display-username">{user.username}</h3>
             )}
-            <p style={{ color: "#3498db", margin: "5px 0", fontWeight: "bold" }}>{user.role === "admin" ? "Quản trị viên" : "Thành viên"}</p>
+            <p className="user-role-badge">{user.role === "admin" ? "Quản trị viên" : "Thành viên"}</p>
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px", marginBottom: "30px" }}>
-          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
-            <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Email</label>
-            <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.email}</p>
+        <div className="profile-details-grid">
+          <div className="detail-item">
+            <label>Email</label>
+            <p>{user.email}</p>
           </div>
-          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
-            <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Ngày sinh</label>
+          <div className="detail-item">
+            <label>Ngày sinh</label>
             {isEditing ? (
-              <input type="date" value={editData.birthDate} onChange={(e) => setEditData({...editData, birthDate: e.target.value})} style={{ padding: "8px", borderRadius: "5px", border: "1px solid #ddd", width: "100%" }} />
+              <input type="date" value={editData.birthDate} onChange={(e) => setEditData({...editData, birthDate: e.target.value})} className="edit-date-input" />
             ) : (
-              <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.birthDate ? new Date(user.birthDate).toLocaleDateString("vi-VN") : "Chưa đặt"}</p>
+              <p>{user.birthDate ? new Date(user.birthDate).toLocaleDateString("vi-VN") : "Chưa đặt"}</p>
             )}
           </div>
-          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
-            <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Tuổi</label>
-            <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{calculateAge(user.birthDate)}</p>
+          <div className="detail-item">
+            <label>Tuổi</label>
+            <p>{calculateAge(user.birthDate)}</p>
           </div>
-          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px" }}>
-            <label style={{ color: "#7f8c8d", fontSize: "0.85rem", display: "block", marginBottom: "5px" }}>Cấp độ</label>
-            <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>{user.level || 0}</p>
+          <div className="detail-item">
+            <label>Cấp độ</label>
+            <p>{user.level || 0}</p>
           </div>
         </div>
 
-        {validationError && <p style={{ color: "red", marginBottom: "15px", fontSize: "0.9rem" }}>{validationError}</p>}
+        {validationError && <p className="error-text">{validationError}</p>}
 
-        {isEditing ? (
-          <div style={{ display: "flex", gap: "15px" }}>
-            <button onClick={handleSave} disabled={uploading} style={{ flex: 1, padding: "12px", backgroundColor: "#2ecc71", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>{uploading ? "ĐANG LƯU..." : "LƯU THAY ĐỔI"}</button>
-            <button onClick={() => { setIsEditing(false); setValidationError(""); }} style={{ flex: 1, padding: "12px", backgroundColor: "#e74c3c", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>HỦY</button>
-          </div>
-        ) : (
-          <button onClick={() => setIsEditing(true)} style={{ width: "100%", padding: "12px", backgroundColor: "#3498db", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>CHỈNH SỬA THÔNG TIN</button>
-        )}
+        <div className="profile-actions">
+          {isEditing ? (
+            <>
+              <button onClick={handleSave} disabled={uploading} className="btn-save">{uploading ? "ĐANG LƯU..." : "LƯU THAY ĐỔI"}</button>
+              <button onClick={() => { setIsEditing(false); setValidationError(""); }} className="btn-cancel">HỦY</button>
+            </>
+          ) : (
+            <button onClick={() => setIsEditing(true)} className="btn-edit-mode">CHỈNH SỬA THÔNG TIN</button>
+          )}
+        </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .profile-page-container {
+          padding: 20px;
+          max-width: 800px;
+          margin: 0 auto;
+          min-height: 80vh;
+        }
+        .profile-card {
+          background: #fff;
+          padding: 30px;
+          border-radius: 10px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .profile-title {
+          color: #333;
+          margin-bottom: 25px;
+          text-align: center;
+        }
+        .profile-header-info {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          margin-bottom: 30px;
+        }
+        .avatar-wrapper {
+          position: relative;
+          flex-shrink: 0;
+        }
+        .profile-avatar-img {
+          width: 120px;
+          height: 120px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 3px solid #3498db;
+        }
+        .avatar-upload-label {
+          position: absolute;
+          bottom: 5px;
+          right: 5px;
+          background: #3498db;
+          color: #fff;
+          padding: 8px;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 0.9rem;
+        }
+        .user-title-info {
+          overflow: hidden;
+        }
+        .display-username {
+          margin: 0;
+          font-size: 1.8rem;
+          color: #2c3e50;
+          word-break: break-all;
+        }
+        .edit-username-input {
+          font-size: 1.2rem;
+          padding: 8px;
+          width: 100%;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+        }
+        .user-role-badge {
+          color: #3498db;
+          margin: 5px 0;
+          font-weight: bold;
+        }
+        .profile-details-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-bottom: 30px;
+        }
+        .detail-item {
+          padding: 15px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .detail-item label {
+          color: #7f8c8d;
+          font-size: 0.85rem;
+          display: block;
+          margin-bottom: 5px;
+        }
+        .detail-item p {
+          margin: 0;
+          font-weight: bold;
+          color: #2c3e50;
+          word-break: break-all;
+        }
+        .edit-date-input {
+          width: 100%;
+          padding: 5px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+        }
+        .error-text {
+          color: red;
+          margin-bottom: 15px;
+          font-size: 0.9rem;
+        }
+        .profile-actions {
+          display: flex;
+          gap: 15px;
+        }
+        .btn-save, .btn-cancel, .btn-edit-mode {
+          flex: 1;
+          padding: 12px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-weight: bold;
+        }
+        .btn-save { background: #2ecc71; color: #fff; }
+        .btn-cancel { background: #e74c3c; color: #fff; }
+        .btn-edit-mode { background: #3498db; color: #fff; width: 100%; }
+
+        @media (max-width: 600px) {
+          .profile-page-container {
+            padding: 10px;
+          }
+          .profile-card {
+            padding: 15px;
+          }
+          .profile-header-info {
+            flex-direction: column;
+            text-align: center;
+          }
+          .profile-avatar-img {
+            width: 100px;
+            height: 100px;
+          }
+          .profile-details-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+          }
+          .display-username {
+            font-size: 1.4rem;
+          }
+          .profile-actions {
+            flex-direction: column;
+          }
+        }
+      ` }} />
     </div>
   );
 }

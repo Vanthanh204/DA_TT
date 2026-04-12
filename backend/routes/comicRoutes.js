@@ -77,7 +77,12 @@ router.get("/chapter/:chapterId", async (req, res) => {
     if (!chapter) return res.status(404).json({ message: "Không tìm thấy chương" });
 
     // 1. TĂNG VIEW CHO BỘ TRUYỆN (Luôn thực hiện)
-    await Comic.findByIdAndUpdate(chapter.comicId, { $inc: { views: 1 } });
+    const updatedComic = await Comic.findByIdAndUpdate(
+      chapter.comicId, 
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    console.log(`Đã tăng view cho truyện ${chapter.comicId}. View hiện tại: ${updatedComic?.views}`);
 
     // 2. Kiểm tra token (không bắt buộc) để xử lý khóa chương và level
     const authHeader = req.headers.authorization;

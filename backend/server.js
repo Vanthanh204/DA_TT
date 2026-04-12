@@ -9,6 +9,7 @@ const authRoute = require('./routes/authRoutes');
 const comicRoute = require('./routes/comicRoutes');
 const userRoute = require('./routes/userRoutes');
 const genreRoute = require('./routes/genreRoutes');
+const commentRoute = require('./routes/commentRoutes'); // Thêm dòng này
 const User = require('./models/user');
 const Comic = require('./models/comic');
 const Chapter = require('./models/chapter');
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoute);
 app.use('/api/comics', comicRoute);
 app.use('/api/users', userRoute);
 app.use('/api/genres', genreRoute);
+app.use('/api/comments', commentRoute); // Thêm dòng này
 
 // 👉 API THỐNG KÊ CHO ADMIN
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {

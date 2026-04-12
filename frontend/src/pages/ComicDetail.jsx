@@ -9,6 +9,12 @@ function ComicDetail() {
   const [loading, setLoading] = useState(true);
   const [lastRead, setLastRead] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  
+  // States cho bình luận
+  const [comments, setComments] = useState([]);
+  const [commentContent, setCommentContent] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,8 +22,9 @@ function ComicDetail() {
     const user = userStr ? JSON.parse(userStr) : null;
     const userId = user ? (user._id || user.id) : "guest";
 
-    const fetchComic = async () => {
+    const fetchData = async () => {
       try {
+        // 1. Lấy chi tiết truyện
         const res = await API.get(`/comics/${id}`);
         if (res.data) {
           setComic(res.data);
@@ -30,20 +37,54 @@ function ComicDetail() {
 
           // Kiểm tra xem user có yêu thích truyện này chưa
           if (user) {
-            const userProfile = await API.get("/users/me");
-            if (userProfile.data.favorites.includes(id)) {
-              setIsFavorite(true);
-            }
+            try {
+              const userProfile = await API.get("/users/me");
+              if (userProfile.data.favorites.includes(id)) {
+                setIsFavorite(true);
+              }
+            } catch (pErr) { console.error("Lỗi lấy profile:", pErr); }
           }
         }
+
+        // 2. Lấy danh sách bình luận
+        const commentRes = await API.get(`/comments/${id}`);
+        setComments(commentRes.data);
+
       } catch (err) {
-        console.error("Lỗi lấy chi tiết truyện:", err);
+        console.error("Lỗi lấy dữ liệu:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchComic();
+    fetchData();
   }, [id]);
+
+  const handlePostComment = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Bạn cần đăng nhập để bình luận!");
+      navigate("/login");
+      return;
+    }
+
+    if (!commentContent.trim()) return;
+
+    setSubmitting(true);
+    try {
+      const res = await API.post("/comments", {
+        comicId: id,
+        content: commentContent
+      });
+      // Thêm bình luận mới vào đầu danh sách
+      setComments([res.data, ...comments]);
+      setCommentContent("");
+    } catch (err) {
+      alert("Lỗi khi đăng bình luận: " + (err.response?.data?.message || err.message));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const toggleFavorite = async () => {
     const token = localStorage.getItem("token");
@@ -78,6 +119,7 @@ function ComicDetail() {
 
   const firstChapter = sortedChapters.length > 0 ? sortedChapters[0] : null;
   const latestChapter = sortedChapters.length > 0 ? sortedChapters[sortedChapters.length - 1] : null;
+  const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   const handleRead = (chapterId, chapterNumber) => {
     if (latest3ChapterNumbers.includes(chapterNumber) && userLevel < 1) {
@@ -163,6 +205,47 @@ function ComicDetail() {
         ) : (
           <p className="no-chapters">Truyện hiện chưa có chương nào.</p>
         )}
+      </div>
+
+      {/* PHẦN BÌNH LUẬN */}
+      <div className="comment-section">
+        <h2>Bình luận ({comments.length})</h2>
+        
+        <form className="comment-form" onSubmit={handlePostComment}>
+          <textarea 
+            placeholder="Viết bình luận của bạn..." 
+            value={commentContent}
+            onChange={(e) => setCommentContent(e.target.value)}
+            required
+          />
+          <button type="submit" disabled={submitting}>
+            {submitting ? "Đang gửi..." : "Gửi bình luận"}
+          </button>
+        </form>
+
+        <div className="comment-list">
+          {comments.length > 0 ? (
+            comments.map((comment) => (
+              <div key={comment._id} className="comment-item">
+                <img 
+                  src={comment.user?.avatar || DEFAULT_AVATAR} 
+                  alt={comment.user?.username} 
+                  className="comment-avatar"
+                  onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
+                />
+                <div className="comment-body">
+                  <div className="comment-user-info">
+                    <span className="comment-username">{comment.user?.username || "Người dùng ẩn danh"}</span>
+                    <span className="comment-date">{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
+                  </div>
+                  <p className="comment-content">{comment.content}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="no-comments">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+          )}
+        </div>
       </div>
     </div>
   );

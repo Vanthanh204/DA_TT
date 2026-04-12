@@ -10,6 +10,7 @@ function Navbar({ user, onLogout }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // Thêm state cho mobile menu
   const navigate = useNavigate();
+  const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   // Đóng menu khi chuyển trang
   useEffect(() => {
@@ -163,7 +164,14 @@ function Navbar({ user, onLogout }) {
 
           {user ? (
             <div className="user-info">
-              <Link to="/profile" className="username">Chào, {user.username}</Link>
+              <Link to="/profile" className="user-profile-link" title={user.username}>
+                <img 
+                  src={user.avatar || DEFAULT_AVATAR} 
+                  alt="Avatar" 
+                  className="nav-avatar"
+                  onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
+                />
+              </Link>
               <button onClick={onLogout} className="btn-logout">Đăng xuất</button>
             </div>
           ) : (

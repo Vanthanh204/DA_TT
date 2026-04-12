@@ -70,7 +70,8 @@ router.post("/login", async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        level: user.level
+        level: user.level,
+        avatar: user.avatar || ""
       }
     });
 

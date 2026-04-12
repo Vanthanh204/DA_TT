@@ -77,14 +77,19 @@ router.get("/chapter/:chapterId", async (req, res) => {
     if (!chapter) return res.status(404).json({ message: "Không tìm thấy chương" });
 
     // 1. TĂNG VIEW CHO BỘ TRUYỆN (Luôn thực hiện)
-    if (chapter.comicId) {
-      const updateResult = await Comic.updateOne(
-        { _id: chapter.comicId },
-        { $inc: { views: 1 } }
-      );
-      console.log(`Kết quả tăng view cho truyện ${chapter.comicId}:`, updateResult);
-    } else {
-      console.warn("Chương truyện không có comicId, không thể tăng view.");
+    try {
+      if (chapter.comicId) {
+        const comicToUpdate = await Comic.findById(chapter.comicId);
+        if (comicToUpdate) {
+          comicToUpdate.views = (comicToUpdate.views || 0) + 1;
+          await comicToUpdate.save();
+          console.log(`[VIEW UPDATE] Truyện: "${comicToUpdate.title}" | View mới: ${comicToUpdate.views}`);
+        } else {
+          console.error(`[VIEW ERROR] Không tìm thấy bộ truyện với ID: ${chapter.comicId}`);
+        }
+      }
+    } catch (viewErr) {
+      console.error("[VIEW ERROR] Lỗi khi cập nhật lượt xem:", viewErr);
     }
 
     // 2. Kiểm tra token (không bắt buộc) để xử lý khóa chương và level

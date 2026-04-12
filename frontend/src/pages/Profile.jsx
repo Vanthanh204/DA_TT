@@ -138,7 +138,13 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
             />
             {isEditing && (
               <label style={{ position: "absolute", bottom: "5px", right: "5px", background: "#3498db", color: "#fff", padding: "8px", borderRadius: "50%", cursor: "pointer", fontSize: "0.9rem" }}>
-                📷<input type="file" hidden onChange={handleFileChange} accept="image/*" />
+                📷<input 
+                    type="file" 
+                    name="image"
+                    hidden 
+                    onChange={handleFileChange} 
+                    accept="image/*"
+                  />
               </label>
             )}
           </div>

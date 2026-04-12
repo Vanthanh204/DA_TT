@@ -114,5 +114,17 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
+    gap: 20px;
+  }
+  .comic-cover-large {
+    width: 200px;
+    height: 280px;
+  }
+  .read-actions {
+    justify-content: center;
+  }
+  .btn-read, .btn-continue, .btn-latest, .btn-favorite {
+    width: 100%;
+    max-width: 300px;
   }
 }

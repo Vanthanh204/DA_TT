@@ -3,10 +3,10 @@ const router = express.Router();
 const { uploadCloud } = require("../config/cloudinary");
 const Comic = require("../models/comic");
 const Chapter = require("../models/chapter");
-const { verifyAdmin } = require("../middleware/authMiddleware");
+const { verifyAdmin, verifyToken } = require("../middleware/authMiddleware");
 
-// 👉 1. UPLOAD ẢNH BÌA TRUYỆN (Admin only)
-router.post("/comic-cover", verifyAdmin, uploadCloud.single("image"), async (req, res) => {
+// 👉 1. UPLOAD ẢNH (Dùng cho cả ảnh bìa và avatar)
+router.post("/comic-cover", verifyToken, uploadCloud.single("image"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "Chưa có ảnh nào được chọn" });
     res.json({ imageUrl: req.file.path });

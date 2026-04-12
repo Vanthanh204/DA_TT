@@ -75,7 +75,9 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
       setEditData({ ...editData, avatar: res.data.imageUrl });
       alert("Tải ảnh lên thành công!");
     } catch (err) {
-      alert("Lỗi khi tải ảnh lên!");
+      const errorMsg = err.response?.data?.message || "Lỗi khi tải ảnh lên!";
+      alert("Lỗi: " + errorMsg);
+      console.error("Upload error:", err);
     } finally {
       setUploading(false);
     }

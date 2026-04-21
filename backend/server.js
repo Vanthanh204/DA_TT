@@ -53,6 +53,20 @@ app.get('/', (req, res) => {
 // start server
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+
+  // Tự động ping chính mình mỗi 14 phút để tránh Render ngủ
+  // Đảm bảo bạn đã cấu hình BACKEND_URL trong biến môi trường trên Render
+  const BACKEND_URL = process.env.BACKEND_URL;
+  if (BACKEND_URL) {
+    const https = require('https');
+    setInterval(() => {
+      https.get(BACKEND_URL, (res) => {
+        console.log(`Self-ping successful: ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.error(`Self-ping failed: ${err.message}`);
+      });
+    }, 14 * 60 * 1000); // 14 phút
+  }
 });

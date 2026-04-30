@@ -96,8 +96,15 @@ function ReadingPage() {
     <div className="reading-container">
       <div className={`reading-header ${showNav ? "visible" : "hidden"}`}>
         <div className="nav-top">
-          <Link to={`/comic/${chapter.comicId || ""}`} className="back-link">← Quay lại truyện</Link>
-          <h2>Chương {chapter.chapterNumber}: {chapter.title || "Không có tiêu đề"}</h2>
+          <div className="breadcrumb">
+            <Link to="/">Trang chủ</Link>
+            <span className="separator"> » </span>
+            <Link to={`/comic/${chapter.comicId?._id || chapter.comicId}`}>
+              {chapter.comicId?.title || "Truyện"}
+            </Link>
+            <span className="separator"> » </span>
+            <span className="current">Chương {chapter.chapterNumber}</span>
+          </div>
         </div>
         <div className="chapter-nav">
           {chapter.prevChapterId ? (

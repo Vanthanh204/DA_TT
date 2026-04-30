@@ -73,7 +73,7 @@ router.get("/", async (req, res) => {
 // 👉 LẤY CHI TIẾT MỘT CHƯƠNG TRUYỆN (Mọi người đều có thể tăng view)
 router.get("/chapter/:chapterId", async (req, res) => {
   try {
-    const chapter = await Chapter.findById(req.params.chapterId);
+    const chapter = await Chapter.findById(req.params.chapterId).populate("comicId", "title");
     if (!chapter) return res.status(404).json({ message: "Không tìm thấy chương" });
 
     // 1. TĂNG VIEW CHO BỘ TRUYỆN (Luôn thực hiện)

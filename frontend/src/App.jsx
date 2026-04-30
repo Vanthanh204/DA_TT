@@ -16,26 +16,14 @@ import History from "./pages/History";
 import Favorites from "./pages/Favorites";
 import Navbar from "./components/Navbar";
 
-function App() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    window.location.href = "/";
-  };
+// Component trung gian để dùng hook useLocation
+function AppContent({ user, setUser, handleLogout }) {
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith("/admin");
 
   return (
-    <BrowserRouter>
-      <Navbar user={user} onLogout={handleLogout} />
+    <>
+      {!isAdminPage && <Navbar user={user} onLogout={handleLogout} />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
@@ -56,6 +44,30 @@ function App() {
           </>
         )}
       </Routes>
+    </>
+  );
+}
+
+function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    window.location.href = "/";
+  };
+
+  return (
+    <BrowserRouter>
+      <AppContent user={user} setUser={setUser} handleLogout={handleLogout} />
     </BrowserRouter>
   );
 }

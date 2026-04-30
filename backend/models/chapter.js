@@ -16,6 +16,10 @@ const ChapterSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, "Tiêu đề chương không được quá 100 ký tự"]
   },
+  views: {
+    type: Number,
+    default: 0
+  },
   pages: [{ type: String }]
 }, { timestamps: true });
 

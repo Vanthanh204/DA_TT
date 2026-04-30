@@ -76,11 +76,12 @@ router.get("/chapter/:chapterId", async (req, res) => {
     const chapter = await Chapter.findById(req.params.chapterId).populate("comicId", "title");
     if (!chapter) return res.status(404).json({ message: "Không tìm thấy chương" });
 
-    // 1. TĂNG VIEW CHO BỘ TRUYỆN (Luôn thực hiện)
+    // 1. TĂNG VIEW CHO BỘ TRUYỆN VÀ CHƯƠNG (Luôn thực hiện)
     try {
       if (chapter.comicId) {
-        await Comic.findByIdAndUpdate(chapter.comicId, { $inc: { views: 1 } });
-        console.log(`[LOG] Đã tăng view cho truyện ID: ${chapter.comicId}`);
+        await Comic.findByIdAndUpdate(chapter.comicId._id || chapter.comicId, { $inc: { views: 1 } });
+        await Chapter.findByIdAndUpdate(req.params.chapterId, { $inc: { views: 1 } });
+        console.log(`[LOG] Đã tăng view cho truyện và chương`);
       }
     } catch (viewErr) {
       console.error("Lỗi tăng view:", viewErr.message);

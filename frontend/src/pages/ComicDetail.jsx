@@ -132,6 +132,26 @@ function ComicDetail() {
     navigate(`/reading/${chapterId}`);
   };
 
+  const formatTime = (dateString) => {
+    const now = new Date();
+    const past = new Date(dateString);
+    const diffInMs = now - past;
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInDays > 5) {
+      return past.toLocaleDateString("vi-VN");
+    }
+
+    const diffInSec = Math.floor(diffInMs / 1000);
+    const diffInMin = Math.floor(diffInSec / 60);
+    const diffInHour = Math.floor(diffInMin / 60);
+
+    if (diffInSec < 60) return `${diffInSec} giây trước`;
+    if (diffInMin < 60) return `${diffInMin} phút trước`;
+    if (diffInHour < 24) return `${diffInHour} giờ trước`;
+    return `${diffInDays} ngày trước`;
+  };
+
   return (
     <div className="comic-detail-container">
       <div className="comic-info-header">
@@ -186,18 +206,26 @@ function ComicDetail() {
       <div className="chapter-list-section">
         <h2>Danh sách chương ({sortedChapters.length})</h2>
         {sortedChapters.length > 0 ? (
-          <div className="chapter-grid">
-            {sortedChapters.map((chap) => {
+          <div className="chapter-list">
+            <div className="chapter-list-header">
+              <span>Số chương</span>
+              <span>Cập nhật</span>
+              <span style={{ textAlign: "right" }}>Lượt xem</span>
+            </div>
+            {sortedChapters.reverse().map((chap) => {
               const isLocked = latest3ChapterNumbers.includes(chap.chapterNumber) && userLevel < 1;
               return (
                 <div 
                   key={chap._id} 
-                  className={`chapter-item ${isLocked ? "locked" : ""}`} 
+                  className={`chapter-list-item ${isLocked ? "locked" : ""}`} 
                   onClick={() => handleRead(chap._id, chap.chapterNumber)}
-                  style={{ position: "relative", cursor: isLocked ? "not-allowed" : "pointer", opacity: isLocked ? 0.7 : 1 }}
                 >
-                  Chương {chap.chapterNumber}: {chap.title || `Chapter ${chap.chapterNumber}`}
-                  {isLocked && <i className="fas fa-lock" style={{ marginLeft: "10px", color: "#e74c3c" }}></i>}
+                  <div className="chapter-name">
+                    Chương {chap.chapterNumber}: {chap.title || `Chapter ${chap.chapterNumber}`}
+                    {isLocked && <i className="fas fa-lock" style={{ marginLeft: "10px", color: "#e74c3c" }}></i>}
+                  </div>
+                  <div className="chapter-time">{formatTime(chap.createdAt)}</div>
+                  <div className="chapter-views">{chap.views?.toLocaleString() || 0}</div>
                 </div>
               );
             })}

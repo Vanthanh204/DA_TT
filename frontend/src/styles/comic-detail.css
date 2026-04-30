@@ -86,27 +86,69 @@
 .chapter-list-section h2 {
   border-bottom: 2px solid #eee;
   padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
-.chapter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.chapter-item {
-  padding: 12px;
-  background: #f1f1f1;
+.chapter-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #eee;
   border-radius: 5px;
-  cursor: pointer;
-  text-align: center;
-  transition: 0.2s;
+  overflow: hidden;
 }
 
-.chapter-item:hover {
-  background: #e0e0e0;
+.chapter-list-header {
+  display: grid;
+  grid-template-columns: 1fr 150px 100px;
+  padding: 12px 20px;
+  background: #f8f9fa;
+  font-weight: bold;
+  color: #666;
+  border-bottom: 1px solid #eee;
+}
+
+.chapter-list-item {
+  display: grid;
+  grid-template-columns: 1fr 150px 100px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1f1f1;
+  cursor: pointer;
+  transition: 0.2s;
+  align-items: center;
+}
+
+.chapter-list-item:last-child {
+  border-bottom: none;
+}
+
+.chapter-list-item:hover {
+  background: #fdfdfd;
+}
+
+.chapter-list-item:hover .chapter-name {
   color: #e74c3c;
+}
+
+.chapter-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.chapter-time {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.chapter-views {
+  text-align: right;
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.chapter-list-item.locked {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: #f9f9f9;
 }
 
 /* COMMENT SECTION */

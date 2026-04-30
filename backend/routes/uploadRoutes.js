@@ -1,9 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const { uploadCloud } = require("../config/cloudinary");
+const { uploadCloud, cloudinary } = require("../config/cloudinary");
 const Comic = require("../models/comic");
 const Chapter = require("../models/chapter");
 const { verifyAdmin, verifyToken } = require("../middleware/authMiddleware");
+
+// 👉 0. TẠO SIGNATURE ĐỂ UPLOAD TRỰC TIẾP TỪ FRONTEND (Tăng tốc tối đa)
+router.get("/signature", verifyAdmin, (req, res) => {
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const signature = cloudinary.utils.api_sign_request(
+    { timestamp, folder: "comic_web" },
+    process.env.CLOUDINARY_API_SECRET
+  );
+  res.json({ 
+    signature, 
+    timestamp, 
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY
+  });
+});
 
 // 👉 1. UPLOAD ẢNH (Dùng cho cả ảnh bìa và avatar)
 router.post("/comic-cover", verifyToken, uploadCloud.single("image"), async (req, res) => {

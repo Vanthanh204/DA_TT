@@ -122,32 +122,38 @@ function AdminComics() {
     setIsUploading(true);
     try {
       const files = Array.from(newChapter.files);
-      const allImageUrls = [];
-      const batchSize = 5; // Upload mỗi đợt 5 ảnh để tránh nghẽn mạng
       
-      console.log(`Bắt đầu upload ${files.length} ảnh...`);
+      // 1. Lấy signature từ Backend (Để upload an toàn)
+      const sigRes = await API.get("/upload/signature");
+      const { signature, timestamp, cloudName, apiKey } = sigRes.data;
 
-      for (let i = 0; i < files.length; i += batchSize) {
-        const batch = files.slice(i, i + batchSize);
-        console.log(`Đang upload đợt ${Math.floor(i/batchSize) + 1}...`);
-        
-        const uploadPromises = batch.map(async (file) => {
-          const formData = new FormData();
-          formData.append("image", file);
-          // Tăng timeout lên 3 phút cho mỗi request ảnh
-          const res = await API.post("/upload/comic-cover", formData, {
-            timeout: 180000 
-          });
-          return res.data.imageUrl;
+      console.log(`Bắt đầu upload trực tiếp ${files.length} ảnh lên Cloudinary...`);
+
+      // 2. Upload song song tất cả ảnh TRỰC TIẾP lên Cloudinary
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", apiKey);
+        formData.append("timestamp", timestamp);
+        formData.append("signature", signature);
+        formData.append("folder", "comic_web");
+
+        // Gọi trực tiếp API của Cloudinary
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: "POST",
+          body: formData
         });
+        
+        const data = await res.json();
+        if (data.secure_url) return data.secure_url;
+        throw new Error(data.error?.message || "Lỗi upload ảnh");
+      });
 
-        const batchResults = await Promise.all(uploadPromises);
-        allImageUrls.push(...batchResults);
-      }
+      const allImageUrls = await Promise.all(uploadPromises);
 
-      console.log("Tất cả ảnh đã upload thành công, đang tạo chương...");
+      console.log("Đã có tất cả link ảnh. Đang lưu chương vào Database...");
 
-      // Sau khi có đầy đủ link ảnh, mới tạo chương
+      // 3. Gửi danh sách link ảnh về backend để tạo chương
       await API.post("/upload/create-chapter", {
         comicId: showChapterForm,
         chapterNumber: Number(newChapter.chapterNumber),
@@ -155,9 +161,18 @@ function AdminComics() {
         pages: allImageUrls
       });
 
-      alert("Thêm chương thành công!");
+      alert("Thành công! Tốc độ upload đã được tối ưu tối đa.");
       setShowChapterForm(null);
       setNewChapter({ chapterNumber: 1, title: "", files: [] });
+      fetchComics();
+      fetchStats();
+    } catch (err) {
+      console.error("Lỗi:", err);
+      alert("Lỗi khi up chương: " + err.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
       fetchComics();
       fetchStats();
     } catch (err) {

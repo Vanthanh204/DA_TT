@@ -193,7 +193,14 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
               <button onClick={() => { setIsEditing(false); setValidationError(""); }} className="btn-cancel">HỦY</button>
             </>
           ) : (
-            <button onClick={() => setIsEditing(true)} className="btn-edit-mode">CHỈNH SỬA THÔNG TIN</button>
+            <button onClick={() => {
+              setEditData({ 
+                username: user.username, 
+                birthDate: user.birthDate ? user.birthDate.split("T")[0] : "", 
+                avatar: user.avatar || "" 
+              });
+              setIsEditing(true);
+            }} className="btn-edit-mode">CHỈNH SỬA THÔNG TIN</button>
           )}
         </div>
       </div>

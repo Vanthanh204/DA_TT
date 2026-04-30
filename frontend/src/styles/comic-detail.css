@@ -261,12 +261,6 @@
   white-space: pre-wrap;
 }
 
-.no-comments {
-  text-align: center;
-  color: #95a5a6;
-  padding: 20px;
-}
-
 @media (max-width: 768px) {
   .comic-info-header {
     flex-direction: column;

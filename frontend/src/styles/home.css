@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Quicksand', sans-serif;
   background-color: #f0f2f5;
   color: #333;
 }
@@ -12,10 +12,10 @@ body {
 }
 
 .banner {
-  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://wallpaperaccess.com/full/1592679.jpg');
+  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1578632738980-4204f7261d79?q=80&w=2070&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
-  height: 350px;
+  height: 380px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,12 +28,14 @@ body {
 
 .banner-content h1 {
   font-size: 3rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .banner-content p {
   font-size: 1.2rem;
   margin-bottom: 2rem;
+  opacity: 0.9;
 }
 
 .btn-explore {
@@ -45,11 +47,13 @@ body {
   border-radius: 30px;
   cursor: pointer;
   font-weight: bold;
-  transition: transform 0.3s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
 }
 
 .btn-explore:hover {
-  transform: scale(1.05);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(233, 69, 96, 0.6);
 }
 
 .main-content {
@@ -73,13 +77,15 @@ body {
   font-size: 1.5rem;
   color: #1a1a2e;
   border-left: 5px solid #e94560;
-  padding-left: 10px;
+  padding-left: 15px;
+  margin: 0;
 }
 
 .view-all {
   color: #e94560;
-  cursor: pointer;
+  text-decoration: none;
   font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .comic-grid {
@@ -88,50 +94,99 @@ body {
   gap: 1.5rem;
 }
 
+.comic-card-link {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
 .comic-card {
   background: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transition: transform 0.3s;
-  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
 .comic-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 20px rgba(0,0,0,0.15);
 }
 
 .comic-image {
   position: relative;
-  height: 250px;
+  height: 260px;
+  overflow: hidden;
 }
 
 .comic-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.comic-card:hover .comic-image img {
+  transform: scale(1.1);
 }
 
 .comic-info {
-  padding: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .comic-title {
   font-size: 1rem;
-  margin: 0 0 5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin: 0 0 10px;
+  font-weight: 700;
   color: #1a1a2e;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+  height: 2.6em;
 }
 
-.comic-status {
+.latest-chapters {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.latest-chapter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chap-num {
+  font-size: 0.85rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.chap-time {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.comic-meta {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #f0f2f5;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.view-count {
   font-size: 0.8rem;
-  color: #777;
-  margin: 0;
+  color: #7f8c8d;
 }
 
 .sidebar {
@@ -141,52 +196,38 @@ body {
 .sidebar-section {
   background: #fff;
   padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   margin-bottom: 2rem;
 }
 
 .sidebar-section h3 {
   margin-top: 0;
   border-bottom: 2px solid #f0f2f5;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
   font-size: 1.2rem;
   color: #1a1a2e;
 }
 
-.top-list {
-  list-style: none;
-  padding: 0;
+.trending-sidebar-item {
+  transition: background 0.2s;
+  padding: 5px;
+  border-radius: 8px;
 }
 
-.top-list li {
-  display: flex;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #f0f2f5;
-}
-
-.rank {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #e94560;
-  width: 30px;
-}
-
-.top-title {
-  font-weight: 500;
-  color: #333;
+.trending-sidebar-item:hover {
+  background: #f8f9fa;
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .tags span {
   background-color: #f0f2f5;
-  padding: 5px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
   font-size: 0.85rem;
   color: #555;
@@ -204,75 +245,27 @@ body {
     flex-direction: column;
   }
   .banner-content h1 {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
 }
 
 @media (max-width: 600px) {
   .banner {
-    height: 200px;
-    margin-bottom: 1rem;
-  }
-  .banner-content p {
-    display: none;
-  }
-  .comic-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .comic-image {
-    height: 200px;
-  }
-  .section-header h2 {
-    font-size: 1.2rem;
-  }
-}or: #333;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.tags span {
-  background-color: #f0f2f5;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  color: #555;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.tags span:hover {
-  background-color: #e94560;
-  color: #fff;
-}
-
-@media (max-width: 900px) {
-  .main-content {
-    flex-direction: column;
+    height: 250px;
+    margin-bottom: 1.5rem;
   }
   .banner-content h1 {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .banner {
-    height: 200px;
-    margin-bottom: 1rem;
+    font-size: 1.8rem;
   }
   .banner-content p {
     display: none;
   }
   .comic-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 12px;
   }
   .comic-image {
-    height: 200px;
+    height: 220px;
   }
   .section-header h2 {
     font-size: 1.2rem;

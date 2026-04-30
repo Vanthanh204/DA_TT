@@ -51,14 +51,27 @@ router.get("/me", verifyToken, async (req, res) => {
 router.put("/me", verifyToken, async (req, res) => {
   try {
     const { username, birthDate, avatar } = req.body;
+    
+    // Kiểm tra xem username có trống không trước khi cập nhật
+    if (username && username.trim().length < 3) {
+      return res.status(400).json({ message: "Tên đăng nhập phải có ít nhất 3 ký tự" });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
       { username, birthDate, avatar },
-      { new: true, runValidators: true } // Thêm runValidators để kiểm tra Date range
+      { new: true, runValidators: true }
     ).select("-password");
+    
     res.json(updatedUser);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error("Lỗi cập nhật User:", err);
+    // Trả về tin nhắn lỗi cụ thể từ Mongoose Validator
+    if (err.name === "ValidationError") {
+      const messages = Object.values(err.errors).map(val => val.message);
+      return res.status(400).json({ message: messages[0] });
+    }
+    res.status(500).json({ message: "Lỗi hệ thống khi cập nhật thông tin" });
   }
 });
 

@@ -6,8 +6,7 @@ const UserSchema = new mongoose.Schema({
     required: [true, "Tên đăng nhập không được rỗng"],
     trim: true,
     minlength: [3, "Tên đăng nhập ít nhất 3 ký tự"],
-    maxlength: [20, "Tên đăng nhập tối đa 20 ký tự"],
-    match: [/^[a-zA-Z0-9_]+$/, "Tên đăng nhập chỉ chứa chữ cái, số và dấu gạch dưới"]
+    maxlength: [20, "Tên đăng nhập tối đa 20 ký tự"]
   },
   email: { 
     type: String, 

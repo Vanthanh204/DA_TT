@@ -34,30 +34,29 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
   }, [setGlobalUser]);
 
   const validate = () => {
-    // 1. Kiểm tra chuỗi rỗng
-    if (!editData.username.trim()) return "Tên đăng nhập không được để trống";
+    // 1. Kiểm tra chuỗi rỗng cho username
+    if (!editData.username || !editData.username.trim()) return "Tên hiển thị không được để trống";
     
     // 2. Kiểm tra độ dài chuỗi
-    if (editData.username.length < 3 || editData.username.length > 20) return "Tên đăng nhập từ 3-20 ký tự";
+    if (editData.username.length < 3 || editData.username.length > 30) return "Tên hiển thị từ 3-30 ký tự";
 
-    // 3. Kiểm tra ngày tháng (Birth Date)
-    if (!editData.birthDate) return "Vui lòng chọn ngày sinh";
-    
-    const birthDate = new Date(editData.birthDate);
-    const now = new Date();
-    
-    // Kiểm tra ngày trong tương lai
-    if (birthDate > now) return "Ngày sinh không được là ngày trong tương lai";
+    // 3. Kiểm tra ngày tháng (Birth Date) - Chỉ kiểm tra nếu người dùng CÓ nhập
+    if (editData.birthDate) {
+      const birthDate = new Date(editData.birthDate);
+      const now = new Date();
+      
+      if (isNaN(birthDate.getTime())) return "Ngày sinh không hợp lệ";
+      if (birthDate > now) return "Ngày sinh không được là ngày trong tương lai";
 
-    // Kiểm tra tuổi (6-100)
-    let age = now.getFullYear() - birthDate.getFullYear();
-    const m = now.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && now.getDate() < birthDate.getDate())) {
-        age--;
+      let age = now.getFullYear() - birthDate.getFullYear();
+      const m = now.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && now.getDate() < birthDate.getDate())) {
+          age--;
+      }
+
+      if (age < 6) return "Bạn phải ít nhất 6 tuổi";
+      if (age > 100) return "Tuổi không được vượt quá 100";
     }
-
-    if (age < 6) return "Bạn phải ít nhất 6 tuổi";
-    if (age > 100) return "Tuổi không được vượt quá 100";
 
     return "";
   };
@@ -65,6 +64,13 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
+    // Kiểm tra định dạng file
+    if (!file.type.startsWith("image/")) {
+      alert("Vui lòng chọn tệp hình ảnh!");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("image", file);
     setUploading(true);
@@ -72,22 +78,17 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
       const res = await API.post("/upload/comic-cover", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
-      setEditData({ ...editData, avatar: res.data.imageUrl });
+      setEditData(prev => ({ ...prev, avatar: res.data.imageUrl }));
       alert("Tải ảnh lên thành công!");
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Lỗi khi tải ảnh lên!";
       alert("Lỗi: " + errorMsg);
-      console.error("Upload error:", err);
     } finally {
       setUploading(false);
     }
   };
 
   const handleSave = async () => {
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-
     const error = validate();
     if (error) {
       setValidationError(error);
@@ -95,20 +96,29 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
       return;
     }
 
+    setUploading(true);
     try {
-      setIsEditing(false);
-      setUploading(true);
-      const res = await API.put("/users/me", editData);
+      // Chuẩn bị dữ liệu gửi đi: nếu birthDate trống thì gửi null
+      const dataToSend = {
+        ...editData,
+        birthDate: editData.birthDate || null
+      };
+
+      const res = await API.put("/users/me", dataToSend);
       const updatedUser = res.data;
+      
       setUser(updatedUser);
       if (setGlobalUser) setGlobalUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
+      window.dispatchEvent(new Event("storage"));
+      
+      setIsEditing(false);
       setValidationError("");
-      alert("Cập nhật thành công!");
+      alert("Cập nhật thông tin thành công!");
     } catch (err) {
-      console.error("Lỗi cập nhật:", err);
-      setIsEditing(true);
-      alert("Lỗi: " + (err.response?.data?.message || "Không thể lưu thông tin"));
+      console.error("Lỗi cập nhật Profile:", err);
+      const msg = err.response?.data?.message || "Không thể kết nối với máy chủ";
+      alert("Lỗi: " + msg);
     } finally {
       setUploading(false);
     }

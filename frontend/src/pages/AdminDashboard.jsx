@@ -8,6 +8,7 @@ function AdminDashboard() {
     totalUsers: 0,
     totalComics: 0,
     totalChapters: 0,
+    visitCount: 0,
   });
   const location = useLocation();
 
@@ -64,24 +65,13 @@ function AdminDashboard() {
             <h3>Chương truyện</h3>
             <p>{stats.totalChapters}</p>
           </div>
-        </div>
-
-        <div className="admin-content-card">
-          <h2>Chào mừng Admin!</h2>
-          <p>Chọn một mục ở menu bên trái để bắt đầu quản lý hệ thống.</p>
-          
-          <div className="admin-actions-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px", marginTop: "30px" }}>
-            <Link to="/admin/comics" className="btn-admin btn-info" style={{ padding: "20px", justifyContent: "center" }}>
-              <i className="fas fa-book"></i> Quản lý truyện
-            </Link>
-            <Link to="/admin/users" className="btn-admin btn-info" style={{ padding: "20px", justifyContent: "center", backgroundColor: "#e67e22" }}>
-              <i className="fas fa-users"></i> Quản lý người dùng
-            </Link>
-            <Link to="/admin/genres" className="btn-admin btn-info" style={{ padding: "20px", justifyContent: "center", backgroundColor: "#27ae60" }}>
-              <i className="fas fa-tags"></i> Quản lý thể loại
-            </Link>
+          <div className="stat-card" style={{ backgroundColor: "#9b59b6", color: "#fff" }}>
+            <h3>Lượt truy cập</h3>
+            <p>{stats.visitCount?.toLocaleString() || 0}</p>
           </div>
         </div>
+
+        {/* Ô chào mừng đã được gỡ bỏ theo yêu cầu */}
       </main>
     </div>
   );

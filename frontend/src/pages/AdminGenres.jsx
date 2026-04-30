@@ -5,6 +5,7 @@ import "../styles/admin.css";
 
 function AdminGenres() {
   const [genres, setGenres] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [stats, setStats] = useState({ totalUsers: 0, totalComics: 0, totalChapters: 0 });
   const [newGenre, setNewGenre] = useState({ name: "", description: "" });
   const [editingGenre, setEditingGenre] = useState(null);
@@ -39,11 +40,11 @@ function AdminGenres() {
       if (editingGenre) {
         const res = await API.put(`/genres/${editingGenre._id}`, newGenre);
         setGenres(genres.map(g => g._id === editingGenre._id ? res.data : g));
-        alert("Cập nhật thể loại thành công!");
+        alert("Lưu thành công");
       } else {
         const res = await API.post("/genres", newGenre);
         setGenres([...genres, res.data].sort((a, b) => a.name.localeCompare(b.name)));
-        alert("Thêm thể loại thành công!");
+        alert("Lưu thành công");
       }
       setNewGenre({ name: "", description: "" });
       setEditingGenre(null);
@@ -66,12 +67,16 @@ function AdminGenres() {
         await API.delete(`/genres/${id}`);
         setGenres(genres.filter((g) => g._id !== id));
         fetchStats();
-        alert("Xóa thành công!");
+        alert("Lưu thành công");
       } catch (err) {
         alert("Lỗi khi xóa!");
       }
     }
   };
+
+  const filteredGenres = genres.filter(g => 
+    g.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="admin-layout">
@@ -118,9 +123,22 @@ function AdminGenres() {
         <div className="admin-content-card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <h2 style={{ margin: 0 }}>Quản lý thể loại</h2>
-            <button className="btn-admin btn-add" onClick={() => { setShowAddForm(!showAddForm); setEditingGenre(null); setNewGenre({name:"", description:""}); }}>
-              <i className="fas fa-plus"></i> {showAddForm ? "Đóng Form" : "Thêm thể loại"}
-            </button>
+            <div style={{ display: "flex", gap: "15px" }}>
+              <div className="admin-search-box" style={{ position: "relative", width: "250px" }}>
+                <input 
+                  type="text" 
+                  className="admin-input" 
+                  placeholder="Tìm thể loại..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ paddingLeft: "35px", margin: 0 }}
+                />
+                <i className="fas fa-search" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#888" }}></i>
+              </div>
+              <button className="btn-admin btn-add" onClick={() => { setShowAddForm(!showAddForm); setEditingGenre(null); setNewGenre({name:"", description:""}); }}>
+                <i className="fas fa-plus"></i> {showAddForm ? "Đóng Form" : "Thêm thể loại"}
+              </button>
+            </div>
           </div>
 
           {showAddForm && (
@@ -155,24 +173,28 @@ function AdminGenres() {
           )}
 
           <div className="admin-list">
-            {genres.map((genre) => (
-              <div key={genre._id} className="admin-list-item">
-                <div className="item-info">
-                  <div>
-                    <div className="item-title">{genre.name}</div>
-                    <div style={{ fontSize: "0.85rem", color: "#888" }}>{genre.description || "Không có mô tả"}</div>
+            {filteredGenres.length > 0 ? (
+              filteredGenres.map((genre) => (
+                <div key={genre._id} className="admin-list-item">
+                  <div className="item-info">
+                    <div>
+                      <div className="item-title">{genre.name}</div>
+                      <div style={{ fontSize: "0.85rem", color: "#888" }}>{genre.description || "Không có mô tả"}</div>
+                    </div>
+                  </div>
+                  <div className="item-actions">
+                    <button className="btn-admin btn-edit" onClick={() => handleEdit(genre)}>
+                      <i className="fas fa-edit"></i> Sửa
+                    </button>
+                    <button className="btn-admin btn-delete" onClick={() => handleDelete(genre._id)}>
+                      <i className="fas fa-trash"></i> Xóa
+                    </button>
                   </div>
                 </div>
-                <div className="item-actions">
-                  <button className="btn-admin btn-edit" onClick={() => handleEdit(genre)}>
-                    <i className="fas fa-edit"></i> Sửa
-                  </button>
-                  <button className="btn-admin btn-delete" onClick={() => handleDelete(genre._id)}>
-                    <i className="fas fa-trash"></i> Xóa
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ textAlign: "center", padding: "20px", color: "#888" }}>Không tìm thấy thể loại nào.</p>
+            )}
           </div>
         </div>
       </main>

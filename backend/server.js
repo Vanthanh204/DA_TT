@@ -13,6 +13,7 @@ const commentRoute = require('./routes/commentRoutes'); // Thêm dòng này
 const User = require('./models/user');
 const Comic = require('./models/comic');
 const Chapter = require('./models/chapter');
+const WebsiteStats = require('./models/websiteStats');
 const { verifyAdmin } = require('./middleware/authMiddleware');
 
 const app = express();
@@ -33,13 +34,35 @@ app.use('/api/users', userRoute);
 app.use('/api/genres', genreRoute);
 app.use('/api/comments', commentRoute); // Thêm dòng này
 
+// 👉 API TĂNG LƯỢT TRUY CẬP (Gọi khi load trang chủ)
+app.post('/api/admin/stats/visit', async (req, res) => {
+  try {
+    let stats = await WebsiteStats.findOne();
+    if (!stats) {
+      stats = new WebsiteStats({ visitCount: 1 });
+    } else {
+      stats.visitCount += 1;
+    }
+    await stats.save();
+    res.json({ visitCount: stats.visitCount });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // 👉 API THỐNG KÊ CHO ADMIN
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const totalComics = await Comic.countDocuments();
     const totalChapters = await Chapter.countDocuments();
-    res.json({ totalUsers, totalComics, totalChapters });
+    const siteStats = await WebsiteStats.findOne();
+    res.json({ 
+      totalUsers, 
+      totalComics, 
+      totalChapters, 
+      visitCount: siteStats ? siteStats.visitCount : 0 
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

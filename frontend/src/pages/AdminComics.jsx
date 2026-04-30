@@ -5,6 +5,7 @@ import "../styles/admin.css";
 
 function AdminComics() {
   const [comics, setComics] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [genres, setGenres] = useState([]);
   const [stats, setStats] = useState({ totalUsers: 0, totalComics: 0, totalChapters: 0 });
   const [showAddForm, setShowAddForm] = useState(false);
@@ -67,7 +68,7 @@ function AdminComics() {
       setIsUploading(true);
       const res = await API.post("/upload/comic-cover", formData);
       setComicData({ ...comicData, coverImage: res.data.imageUrl });
-      alert("Upload thành công!");
+      alert("Lưu thành công");
     } catch (err) {
       alert("Lỗi upload!");
     } finally {
@@ -89,6 +90,7 @@ function AdminComics() {
       setComicData({ title: "", author: "", description: "", coverImage: "", genres: [] });
       fetchComics();
       fetchStats();
+      alert("Lưu thành công");
     } catch (err) {
       alert("Lỗi xử lý truyện!");
     }
@@ -112,6 +114,7 @@ function AdminComics() {
       setComics(comics.filter(c => c._id !== id));
       if (selectedComic?._id === id) setSelectedComic(null);
       fetchStats();
+      alert("Lưu thành công");
     }
   };
 
@@ -161,7 +164,7 @@ function AdminComics() {
         pages: allImageUrls
       });
 
-      alert("Thành công! Tốc độ upload đã được tối ưu tối đa.");
+      alert("Lưu thành công");
       setShowChapterForm(null);
       setNewChapter({ chapterNumber: 1, title: "", files: [] });
       fetchComics();
@@ -180,11 +183,18 @@ function AdminComics() {
         await API.delete(`/comics/chapter/${chapterId}`);
         fetchComics();
         fetchStats();
+        alert("Lưu thành công");
       } catch (err) {
         alert("Lỗi!");
       }
     }
   };
+
+  // Lọc danh sách theo tìm kiếm
+  const filteredComics = comics.filter(c => 
+    c.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    c.author.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="admin-layout">
@@ -226,14 +236,31 @@ function AdminComics() {
             <h3>Chương truyện</h3>
             <p>{stats.totalChapters}</p>
           </div>
+          <div className="stat-card" style={{ backgroundColor: "#9b59b6", color: "#fff" }}>
+            <h3>Lượt truy cập</h3>
+            <p>{stats.visitCount?.toLocaleString() || 0}</p>
+          </div>
         </div>
 
         <div className="admin-content-card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <h2 style={{ margin: 0 }}>Quản lý truyện</h2>
-            <button className="btn-admin btn-add" onClick={() => { setShowAddForm(!showAddForm); setEditingComic(null); setComicData({title: "", author: "", description: "", coverImage: "", genres: []}); }}>
-              <i className="fas fa-plus"></i> {showAddForm ? "Đóng Form" : "Thêm truyện mới"}
-            </button>
+            <div style={{ display: "flex", gap: "15px" }}>
+              <div className="admin-search-box" style={{ position: "relative", width: "250px" }}>
+                <input 
+                  type="text" 
+                  className="admin-input" 
+                  placeholder="Tìm tên hoặc tác giả..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ paddingLeft: "35px", margin: 0 }}
+                />
+                <i className="fas fa-search" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#888" }}></i>
+              </div>
+              <button className="btn-admin btn-add" onClick={() => { setShowAddForm(!showAddForm); setEditingComic(null); setComicData({title: "", author: "", description: "", coverImage: "", genres: []}); }}>
+                <i className="fas fa-plus"></i> {showAddForm ? "Đóng Form" : "Thêm truyện mới"}
+              </button>
+            </div>
           </div>
 
           {/* Form thêm/sửa */}
@@ -297,28 +324,32 @@ function AdminComics() {
 
           {/* Danh sách truyện dạng list dọc */}
           <div className="admin-list">
-            {comics.map((comic) => (
-              <div key={comic._id} className="admin-list-item">
-                <div className="item-info">
-                  <img src={comic.coverImage} alt="" style={{ width: "45px", height: "60px", objectFit: "cover", borderRadius: "4px" }} />
-                  <div>
-                    <div className="item-title">{comic.title}</div>
-                    <div style={{ fontSize: "0.8rem", color: "#888" }}>{comic.author} • {comic.chapters?.length || 0} chương</div>
+            {filteredComics.length > 0 ? (
+              filteredComics.map((comic) => (
+                <div key={comic._id} className="admin-list-item">
+                  <div className="item-info">
+                    <img src={comic.coverImage} alt="" style={{ width: "45px", height: "60px", objectFit: "cover", borderRadius: "4px" }} />
+                    <div>
+                      <div className="item-title">{comic.title}</div>
+                      <div style={{ fontSize: "0.8rem", color: "#888" }}>{comic.author} • {comic.chapters?.length || 0} chương</div>
+                    </div>
+                  </div>
+                  <div className="item-actions">
+                    <button className="btn-admin btn-info" onClick={() => { setSelectedComic(comic); window.scrollTo(0,0); }}>
+                      <i className="fas fa-eye"></i> Xem
+                    </button>
+                    <button className="btn-admin btn-edit" onClick={() => handleEditComic(comic)}>
+                      <i className="fas fa-edit"></i> Sửa
+                    </button>
+                    <button className="btn-admin btn-delete" onClick={() => handleDeleteComic(comic._id)}>
+                      <i className="fas fa-trash"></i> Xóa
+                    </button>
                   </div>
                 </div>
-                <div className="item-actions">
-                  <button className="btn-admin btn-info" onClick={() => { setSelectedComic(comic); window.scrollTo(0,0); }}>
-                    <i className="fas fa-eye"></i> Xem
-                  </button>
-                  <button className="btn-admin btn-edit" onClick={() => handleEditComic(comic)}>
-                    <i className="fas fa-edit"></i> Sửa
-                  </button>
-                  <button className="btn-admin btn-delete" onClick={() => handleDeleteComic(comic._id)}>
-                    <i className="fas fa-trash"></i> Xóa
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ textAlign: "center", padding: "20px", color: "#888" }}>Không tìm thấy truyện nào.</p>
+            )}
           </div>
         </div>
       </main>

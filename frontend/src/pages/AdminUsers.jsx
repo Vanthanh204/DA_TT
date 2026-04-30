@@ -5,6 +5,7 @@ import "../styles/admin.css";
 
 function AdminUsers() {
   const [users, setUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [stats, setStats] = useState({ totalUsers: 0, totalComics: 0, totalChapters: 0 });
   const location = useLocation();
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ function AdminUsers() {
     try {
       const res = await API.patch(`/users/${id}/status`);
       setUsers(users.map(u => u._id === id ? { ...u, isLocked: res.data.isLocked } : u));
-      alert(res.data.message);
+      alert("Lưu thành công");
     } catch (err) {
       console.error("Lỗi cập nhật trạng thái:", err);
       alert("Lỗi khi cập nhật trạng thái!");
@@ -47,7 +48,7 @@ function AdminUsers() {
         await API.delete(`/users/${id}`);
         setUsers(users.filter(u => u._id !== id));
         fetchStats();
-        alert("Xóa thành công!");
+        alert("Lưu thành công");
       } catch (err) {
         console.error("Lỗi xóa người dùng:", err);
         alert("Lỗi khi xóa!");
@@ -80,11 +81,17 @@ function AdminUsers() {
         role: user.role 
       });
       setUsers(users.map(u => u._id === user._id ? { ...u, isChanged: false } : u));
-      alert(`Đã lưu thay đổi cho ${user.username}!`);
+      alert("Lưu thành công");
     } catch (err) {
       alert("Lỗi khi lưu thay đổi!");
     }
   };
+
+  // Lọc danh sách theo tìm kiếm
+  const filteredUsers = users.filter(u => 
+    u.username.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="admin-layout">
@@ -129,60 +136,77 @@ function AdminUsers() {
         </div>
 
         <div className="admin-content-card">
-          <h2>Quản lý người dùng</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <h2 style={{ margin: 0 }}>Quản lý người dùng</h2>
+            <div className="admin-search-box" style={{ position: "relative", width: "300px" }}>
+              <input 
+                type="text" 
+                className="admin-input" 
+                placeholder="Tìm tên hoặc email..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ paddingLeft: "35px", margin: 0 }}
+              />
+              <i className="fas fa-search" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#888" }}></i>
+            </div>
+          </div>
           
           <div className="admin-list">
-            {users.map((user) => (
-              <div key={user._id} className="admin-list-item">
-                <div className="item-info">
-                  <img 
-                    src={user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
-                    alt="" 
-                    style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }} 
-                  />
-                  <div>
-                    <div className="item-title" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      {user.username}
-                      <span style={{ fontSize: "0.7rem", padding: "2px 6px", background: user.role === "admin" ? "#9b59b6" : "#eee", color: user.role === "admin" ? "#fff" : "#666", borderRadius: "4px" }}>
-                        {user.role.toUpperCase()}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: "0.8rem", color: "#888" }}>
-                      {user.email} • Level: {user.level || 0} • Đã đọc: {user.readCount || 0}
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map((user) => (
+                <div key={user._id} className="admin-list-item">
+                  <div className="item-info">
+                    <img 
+                      src={user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
+                      alt="" 
+                      style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }} 
+                    />
+                    <div>
+                      <div className="item-title" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        {user.username}
+                        <span style={{ fontSize: "0.7rem", padding: "2px 6px", background: user.role === "admin" ? "#9b59b6" : "#eee", color: user.role === "admin" ? "#fff" : "#666", borderRadius: "4px" }}>
+                          {user.role.toUpperCase()}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: "0.8rem", color: "#888" }}>
+                        {user.email} • Level: {user.level || 0} • Đã đọc: {user.readCount || 0}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="item-actions">
-                  <div style={{ display: "flex", alignItems: "center", background: "#f0f2f5", padding: "2px 8px", borderRadius: "6px", gap: "8px", marginRight: "10px" }}>
-                    <button onClick={() => handleUpdateLevel(user._id, -1)} style={{ border: "none", background: "none", cursor: "pointer", fontWeight: "bold" }}>-</button>
-                    <span style={{ fontWeight: "bold", fontSize: "0.9rem" }}>Lv.{user.level || 0}</span>
-                    <button onClick={() => handleUpdateLevel(user._id, 1)} style={{ border: "none", background: "none", cursor: "pointer", fontWeight: "bold" }}>+</button>
+                  <div className="item-actions">
+                    <div style={{ display: "flex", alignItems: "center", background: "#f0f2f5", padding: "2px 8px", borderRadius: "6px", gap: "8px", marginRight: "10px" }}>
+                      <button onClick={() => handleUpdateLevel(user._id, -1)} style={{ border: "none", background: "none", cursor: "pointer", fontWeight: "bold" }}>-</button>
+                      <span style={{ fontWeight: "bold", fontSize: "0.9rem" }}>Lv.{user.level || 0}</span>
+                      <button onClick={() => handleUpdateLevel(user._id, 1)} style={{ border: "none", background: "none", cursor: "pointer", fontWeight: "bold" }}>+</button>
+                    </div>
+                    
+                    <button className="btn-admin btn-info" onClick={() => handleToggleRole(user._id)}>
+                      <i className="fas fa-user-tag"></i> {user.role === "admin" ? "Gỡ Admin" : "Lên Admin"}
+                    </button>
+
+                    <button 
+                      className="btn-admin btn-add" 
+                      disabled={!user.isChanged} 
+                      onClick={() => handleSaveUser(user)}
+                      style={{ opacity: user.isChanged ? 1 : 0.5, cursor: user.isChanged ? "pointer" : "not-allowed" }}
+                    >
+                      <i className="fas fa-save"></i> Lưu
+                    </button>
+
+                    <button className="btn-admin btn-edit" onClick={() => handleToggleStatus(user._id)}>
+                      <i className={user.isLocked ? "fas fa-lock-open" : "fas fa-lock"}></i> {user.isLocked ? "Mở khóa" : "Khóa"}
+                    </button>
+
+                    <button className="btn-admin btn-delete" onClick={() => handleDelete(user._id)}>
+                      <i className="fas fa-trash"></i> Xóa
+                    </button>
                   </div>
-                  
-                  <button className="btn-admin btn-info" onClick={() => handleToggleRole(user._id)}>
-                    <i className="fas fa-user-tag"></i> {user.role === "admin" ? "Gỡ Admin" : "Lên Admin"}
-                  </button>
-
-                  <button 
-                    className="btn-admin btn-add" 
-                    disabled={!user.isChanged} 
-                    onClick={() => handleSaveUser(user)}
-                    style={{ opacity: user.isChanged ? 1 : 0.5, cursor: user.isChanged ? "pointer" : "not-allowed" }}
-                  >
-                    <i className="fas fa-save"></i> Lưu
-                  </button>
-
-                  <button className="btn-admin btn-edit" onClick={() => handleToggleStatus(user._id)}>
-                    <i className={user.isLocked ? "fas fa-lock-open" : "fas fa-lock"}></i> {user.isLocked ? "Mở khóa" : "Khóa"}
-                  </button>
-
-                  <button className="btn-admin btn-delete" onClick={() => handleDelete(user._id)}>
-                    <i className="fas fa-trash"></i> Xóa
-                  </button>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ textAlign: "center", padding: "20px", color: "#888" }}>Không tìm thấy người dùng nào.</p>
+            )}
           </div>
         </div>
       </main>

@@ -86,7 +86,7 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
         headers: { "Content-Type": "multipart/form-data" }
       });
       setEditData(prev => ({ ...prev, avatar: res.data.imageUrl }));
-      alert("Tải ảnh lên thành công!");
+      alert("Lưu thành công");
     } catch (err) {
       console.error("Lỗi Upload:", err);
       const errorMsg = err.response?.data?.message || "Lỗi khi tải ảnh lên máy chủ!";
@@ -124,7 +124,7 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
       
       setIsEditing(false);
       setValidationError("");
-      alert("Cập nhật thông tin thành công!");
+      alert("Lưu thành công");
     } catch (err) {
       console.error("Chi tiết lỗi cập nhật Profile:", err);
       let errorMsg = "Không thể kết nối với máy chủ";

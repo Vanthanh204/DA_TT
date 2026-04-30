@@ -15,6 +15,7 @@ import Search from "./pages/Search";
 import History from "./pages/History";
 import Favorites from "./pages/Favorites";
 import Navbar from "./components/Navbar";
+import API from "./services/api";
 
 // Component trung gian để dùng hook useLocation
 function AppContent({ user, setUser, handleLogout }) {
@@ -56,6 +57,16 @@ function App() {
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
+
+    // 👉 Tăng lượt truy cập khi load App
+    const trackVisit = async () => {
+      try {
+        await API.post("/admin/stats/visit");
+      } catch (err) {
+        console.error("Lỗi tracking visit:", err);
+      }
+    };
+    trackVisit();
   }, []);
 
   const handleLogout = () => {

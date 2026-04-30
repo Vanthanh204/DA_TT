@@ -133,6 +133,10 @@ function AdminUsers() {
             <h3>Chương truyện</h3>
             <p>{stats.totalChapters}</p>
           </div>
+          <div className="stat-card" style={{ backgroundColor: "#9b59b6", color: "#fff" }}>
+            <h3>Lượt truy cập</h3>
+            <p>{stats.visitCount?.toLocaleString() || 0}</p>
+          </div>
         </div>
 
         <div className="admin-content-card">

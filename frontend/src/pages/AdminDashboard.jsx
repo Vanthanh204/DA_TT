@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import API from "../services/api";
 import "../styles/admin.css";
 
@@ -10,18 +11,23 @@ function AdminDashboard() {
     totalChapters: 0,
     visitCount: 0,
   });
+  const [dailyData, setDailyData] = useState([]);
   const location = useLocation();
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const res = await API.get("/admin/stats");
-        setStats(res.data);
+        const [statsRes, dailyRes] = await Promise.all([
+          API.get("/admin/stats"),
+          API.get("/admin/stats/daily")
+        ]);
+        setStats(statsRes.data);
+        setDailyData(dailyRes.data);
       } catch (err) {
-        console.error("Lỗi lấy thống kê:", err);
+        console.error("Lỗi lấy dữ liệu thống kê:", err);
       }
     };
-    fetchStats();
+    fetchData();
   }, []);
 
   return (
@@ -69,6 +75,45 @@ function AdminDashboard() {
             <h3>Lượt truy cập</h3>
             <p>{stats.visitCount?.toLocaleString() || 0}</p>
           </div>
+        </div>
+
+        {/* Biểu đồ thống kê */}
+        <div className="admin-charts-container" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "25px", marginTop: "30px" }}>
+          
+          {/* Biểu đồ Lượt truy cập */}
+          <div className="admin-content-card" style={{ padding: "20px" }}>
+            <h3 style={{ marginBottom: "20px" }}>Lượt truy cập theo ngày (10 ngày gần nhất)</h3>
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <LineChart data={dailyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" fontSize={12} tickFormatter={(str) => str.split('-').slice(1).join('/')} />
+                  <YAxis fontSize={12} />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="visitCount" name="Lượt truy cập" stroke="#9b59b6" strokeWidth={2} activeDot={{ r: 8 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Biểu đồ Cập nhật truyện/chương */}
+          <div className="admin-content-card" style={{ padding: "20px" }}>
+            <h3 style={{ marginBottom: "20px" }}>Truyện & Chương mới cập nhật</h3>
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <BarChart data={dailyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" fontSize={12} tickFormatter={(str) => str.split('-').slice(1).join('/')} />
+                  <YAxis fontSize={12} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="newComics" name="Cập nhật mới" fill="#e67e22" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
         </div>
 
         {/* Ô chào mừng đã được gỡ bỏ theo yêu cầu */}

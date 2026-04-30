@@ -14,6 +14,7 @@ const User = require('./models/user');
 const Comic = require('./models/comic');
 const Chapter = require('./models/chapter');
 const WebsiteStats = require('./models/websiteStats');
+const DailyStats = require('./models/dailyStats');
 const { verifyAdmin } = require('./middleware/authMiddleware');
 
 const app = express();
@@ -37,6 +38,9 @@ app.use('/api/comments', commentRoute); // Thêm dòng này
 // 👉 API TĂNG LƯỢT TRUY CẬP (Gọi khi load trang chủ)
 app.post('/api/admin/stats/visit', async (req, res) => {
   try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 1. Tăng tổng lượt truy cập
     let stats = await WebsiteStats.findOne();
     if (!stats) {
       stats = new WebsiteStats({ visitCount: 1 });
@@ -44,13 +48,32 @@ app.post('/api/admin/stats/visit', async (req, res) => {
       stats.visitCount += 1;
     }
     await stats.save();
+
+    // 2. Tăng lượt truy cập theo ngày
+    await DailyStats.findOneAndUpdate(
+      { date: today },
+      { $inc: { visitCount: 1 } },
+      { upsert: true, new: true }
+    );
+
     res.json({ visitCount: stats.visitCount });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// 👉 API THỐNG KÊ CHO ADMIN
+// 👉 API THỐNG KÊ THEO NGÀY (Cho biểu đồ)
+app.get('/api/admin/stats/daily', verifyAdmin, async (req, res) => {
+  try {
+    // Lấy dữ liệu 10 ngày gần nhất
+    const dailyData = await DailyStats.find().sort({ date: -1 }).limit(10);
+    res.json(dailyData.reverse());
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// 👉 API THỐNG KÊ TỔNG QUAN CHO ADMIN
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();

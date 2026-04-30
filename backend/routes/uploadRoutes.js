@@ -3,6 +3,7 @@ const router = express.Router();
 const { uploadCloud, cloudinary } = require("../config/cloudinary");
 const Comic = require("../models/comic");
 const Chapter = require("../models/chapter");
+const DailyStats = require("../models/dailyStats");
 const { verifyAdmin, verifyToken } = require("../middleware/authMiddleware");
 
 // 👉 0. TẠO SIGNATURE ĐỂ UPLOAD TRỰC TIẾP TỪ FRONTEND (Tăng tốc tối đa)
@@ -46,9 +47,18 @@ router.post("/chapter-pages", verifyAdmin, uploadCloud.array("images", 200), asy
 // 👉 3. TẠO TRUYỆN MỚI (Admin only)
 router.post("/create-comic", verifyAdmin, async (req, res) => {
   try {
+    const today = new Date().toISOString().split('T')[0];
     const { title, description, coverImage, author, genres } = req.body;
     const newComic = new Comic({ title, description, coverImage, author, genres });
     await newComic.save();
+
+    // Cập nhật thống kê ngày
+    await DailyStats.findOneAndUpdate(
+      { date: today },
+      { $inc: { newComics: 1 } },
+      { upsert: true }
+    );
+
     res.json({ message: "Tạo truyện thành công!", comic: newComic });
   } catch (err) {
     res.status(500).json({ message: "Lỗi tạo truyện", error: err.message });
@@ -58,10 +68,19 @@ router.post("/create-comic", verifyAdmin, async (req, res) => {
 // 👉 4. TẠO CHƯƠNG MỚI (Admin only)
 router.post("/create-chapter", verifyAdmin, async (req, res) => {
   try {
+    const today = new Date().toISOString().split('T')[0];
     const { comicId, chapterNumber, title, pages } = req.body;
     const newChapter = new Chapter({ comicId, chapterNumber, title, pages });
     await newChapter.save();
     await Comic.findByIdAndUpdate(comicId, { $push: { chapters: newChapter._id } });
+
+    // Cập nhật thống kê ngày
+    await DailyStats.findOneAndUpdate(
+      { date: today },
+      { $inc: { newComics: 1 } },
+      { upsert: true }
+    );
+
     res.json({ message: "Tạo chương thành công!", chapter: newChapter });
   } catch (err) {
     res.status(500).json({ message: "Lỗi tạo chương", error: err.message });

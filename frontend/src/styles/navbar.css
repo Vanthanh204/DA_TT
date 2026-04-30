@@ -250,37 +250,35 @@
 .admin-link { color: #e67e22 !important; font-weight: bold; }
 
 .user-info { display: flex; align-items: center; gap: 15px; }
-.username { color: #3498db; text-decoration: none; font-weight: bold; }
 
-.nav-avatar {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #3498db;
-  transition: transform 0.2s;
+.auth-links { 
+  display: flex; 
+  align-items: center; 
+  gap: 15px; 
 }
 
-.nav-avatar:hover {
-  transform: scale(1.1);
+.btn-login { 
+  color: #bdc3c7 !important; 
+  font-weight: 600;
+  transition: color 0.2s;
 }
 
-.btn-logout {
-  background: #c0392b;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
+.btn-login:hover {
+  color: #fff !important;
 }
 
-.auth-links { display: flex; gap: 10px; }
-.btn-login { color: #fff; }
 .btn-register {
   background: #3498db;
-  color: white;
-  padding: 6px 15px;
+  color: white !important;
+  padding: 8px 20px;
   border-radius: 20px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-register:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
 }
 
 /* Mobile Menu Toggle */

@@ -70,7 +70,7 @@ function Navbar({ user, onLogout }) {
       <div className="nav-container">
         <div className="nav-left">
           <Link to="/" className="logo">
-            Comic<span>Web</span>
+            Góc truyện của <span>Thanh</span>
           </Link>
 
           <div className="nav-menu-dropdown">

@@ -47,7 +47,7 @@ app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
 
 // test route
 app.get('/', (req, res) => {
-  res.send('Comic API is running');
+  res.send('Chào mừng bạn đến với Góc truyện của Thanh API');
 });
 
 // start server

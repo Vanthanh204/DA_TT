@@ -154,6 +154,10 @@ function ComicDetail() {
 
   return (
     <div className="comic-detail-container">
+      <button className="btn-back-home" onClick={() => navigate(-1)}>
+        <i className="fas fa-arrow-left"></i> Quay lại
+      </button>
+
       <div className="comic-info-header">
         <img src={comic.coverImage} alt={comic.title} className="comic-cover-large" />
         <div className="comic-text-info">

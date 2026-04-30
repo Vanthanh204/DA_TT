@@ -71,6 +71,12 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
       return;
     }
 
+    // Kiểm tra dung lượng file (giới hạn 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Ảnh quá lớn! Vui lòng chọn ảnh dưới 2MB.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("image", file);
     setUploading(true);
@@ -81,7 +87,8 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
       setEditData(prev => ({ ...prev, avatar: res.data.imageUrl }));
       alert("Tải ảnh lên thành công!");
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Lỗi khi tải ảnh lên!";
+      console.error("Lỗi Upload:", err);
+      const errorMsg = err.response?.data?.message || "Lỗi khi tải ảnh lên máy chủ!";
       alert("Lỗi: " + errorMsg);
     } finally {
       setUploading(false);
@@ -98,11 +105,13 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
 
     setUploading(true);
     try {
-      // Chuẩn bị dữ liệu gửi đi: nếu birthDate trống thì gửi null
       const dataToSend = {
-        ...editData,
-        birthDate: editData.birthDate || null
+        username: editData.username.trim(),
+        birthDate: editData.birthDate || null,
+        avatar: editData.avatar
       };
+
+      console.log("Đang gửi dữ liệu cập nhật:", dataToSend);
 
       const res = await API.put("/users/me", dataToSend);
       const updatedUser = res.data;
@@ -116,9 +125,18 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
       setValidationError("");
       alert("Cập nhật thông tin thành công!");
     } catch (err) {
-      console.error("Lỗi cập nhật Profile:", err);
-      const msg = err.response?.data?.message || "Không thể kết nối với máy chủ";
-      alert("Lỗi: " + msg);
+      console.error("Chi tiết lỗi cập nhật Profile:", err);
+      let errorMsg = "Không thể kết nối với máy chủ";
+      
+      if (err.response) {
+        // Lỗi từ server trả về (400, 401, 403, 500,...)
+        errorMsg = err.response.data.message || err.response.data || JSON.stringify(err.response.data);
+      } else if (err.request) {
+        // Lỗi do không gửi được request (Network Error)
+        errorMsg = "Lỗi mạng: Không thể gửi yêu cầu tới máy chủ. Vui lòng kiểm tra kết nối Internet hoặc Server Backend.";
+      }
+      
+      alert("Lỗi: " + errorMsg);
     } finally {
       setUploading(false);
     }

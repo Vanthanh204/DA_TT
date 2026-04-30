@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import API from "../services/api";
+import "../styles/admin.css";
 
 function AdminComics() {
   const [comics, setComics] = useState([]);
   const [genres, setGenres] = useState([]);
+  const [stats, setStats] = useState({ totalUsers: 0, totalComics: 0, totalChapters: 0 });
   const [showAddForm, setShowAddForm] = useState(false);
   const [showChapterForm, setShowChapterForm] = useState(null); 
   const [selectedComic, setSelectedComic] = useState(null); 
   const [editingComic, setEditingComic] = useState(null);
-  const navigate = useNavigate();
+  const location = useLocation();
 
   const [comicData, setComicData] = useState({
     title: "", author: "", description: "", coverImage: "", genres: []
@@ -24,7 +26,15 @@ function AdminComics() {
   useEffect(() => {
     fetchComics();
     fetchGenres();
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const res = await API.get("/admin/stats");
+      setStats(res.data);
+    } catch (err) { console.error(err); }
+  };
 
   const fetchComics = async () => {
     try {
@@ -78,6 +88,7 @@ function AdminComics() {
       setEditingComic(null);
       setComicData({ title: "", author: "", description: "", coverImage: "", genres: [] });
       fetchComics();
+      fetchStats();
     } catch (err) {
       alert("Lỗi xử lý truyện!");
     }
@@ -93,7 +104,6 @@ function AdminComics() {
       genres: comic.genres.map(g => g._id || g)
     });
     setShowAddForm(true);
-    window.scrollTo(0, 0);
   };
 
   const handleDeleteComic = async (id) => {
@@ -101,6 +111,7 @@ function AdminComics() {
       await API.delete(`/comics/${id}`);
       setComics(comics.filter(c => c._id !== id));
       if (selectedComic?._id === id) setSelectedComic(null);
+      fetchStats();
     }
   };
 
@@ -131,6 +142,7 @@ function AdminComics() {
       setShowChapterForm(null);
       setNewChapter({ chapterNumber: 1, title: "", files: [] });
       fetchComics();
+      fetchStats();
     } catch (err) {
       alert("Lỗi!");
     } finally {
@@ -143,139 +155,161 @@ function AdminComics() {
       try {
         await API.delete(`/comics/chapter/${chapterId}`);
         fetchComics();
+        fetchStats();
       } catch (err) {
         alert("Lỗi!");
       }
     }
   };
 
-  // Logic nút quay lại thông minh
-  const handleBack = () => {
-    if (selectedComic) {
-      setSelectedComic(null); // Đang xem chi tiết thì đóng lại quay về danh sách
-    } else if (showAddForm) {
-      setShowAddForm(false); // Đang mở form thêm thì đóng form
-    } else {
-      navigate("/admin"); // Đang ở danh sách thì về Dashboard
-    }
-  };
-
   return (
-    <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto", fontFamily: "sans-serif" }}>
-      <button 
-        onClick={handleBack} 
-        style={{ marginBottom: "20px", padding: "10px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer", fontSize: "1.2rem" }}
-      >
-        ←
-      </button>
+    <div className="admin-layout">
+      {/* Sidebar */}
+      <aside className="admin-sidebar">
+        <div className="sidebar-brand">ADMIN PANEL</div>
+        <nav className="sidebar-nav">
+          <Link to="/admin" className="sidebar-link">
+            <i className="fas fa-chart-line"></i> Tổng quan
+          </Link>
+          <Link to="/admin/comics" className={`sidebar-link ${location.pathname === "/admin/comics" ? "active" : ""}`}>
+            <i className="fas fa-book"></i> Quản lý truyện
+          </Link>
+          <Link to="/admin/users" className="sidebar-link">
+            <i className="fas fa-users"></i> Quản lý người dùng
+          </Link>
+          <Link to="/admin/genres" className="sidebar-link">
+            <i className="fas fa-tags"></i> Quản lý thể loại
+          </Link>
+          <Link to="/" className="sidebar-link" style={{ marginTop: "auto", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+            <i className="fas fa-home"></i> Quay lại Web
+          </Link>
+        </nav>
+      </aside>
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", alignItems: "center" }}>
-        <h1>Quản lý truyện</h1>
-        <button onClick={() => { setShowAddForm(!showAddForm); setEditingComic(null); setComicData({title: "", author: "", description: "", coverImage: "", genres: []}); }} style={{ padding: "10px 20px", background: "#27ae60", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
-          {showAddForm ? "Hủy" : "+ Thêm truyện mới"}
-        </button>
-      </div>
-
-      {/* FORM THÊM/SỬA TRUYỆN */}
-      {showAddForm && (
-        <form onSubmit={handleSubmitComic} style={{ background: "#fff", padding: "20px", borderRadius: "8px", border: "1px solid #ddd", marginBottom: "30px", display: "grid", gap: "15px" }}>
-          <h3>{editingComic ? `Sửa: ${editingComic.title}` : "Truyện mới"}</h3>
-          <input type="text" placeholder="Tiêu đề" required value={comicData.title} onChange={e => setComicData({...comicData, title: e.target.value})} style={{ padding: "10px" }} />
-          <input type="text" placeholder="Tác giả" required value={comicData.author} onChange={e => setComicData({...comicData, author: e.target.value})} style={{ padding: "10px" }} />
-          <textarea placeholder="Mô tả" required value={comicData.description} onChange={e => setComicData({...comicData, description: e.target.value})} style={{ padding: "10px", minHeight: "100px" }} />
-          <div>
-            <label>Ảnh bìa: </label>
-            <input type="file" onChange={handleUploadCover} accept="image/*" />
-            {comicData.coverImage && <img src={comicData.coverImage} alt="" style={{ width: "100px", marginTop: "10px", display: "block", borderRadius: "4px" }} />}
+      {/* Main Content */}
+      <main className="admin-main">
+        {/* Stats on top */}
+        <div className="admin-stats-overview">
+          <div className="stat-card stat-blue">
+            <h3>Người dùng</h3>
+            <p>{stats.totalUsers}</p>
           </div>
-          <div>
-            <label>Thể loại: </label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "10px" }}>
-              {genres.map(g => (
-                <label key={g._id} style={{ background: "#eee", padding: "5px 10px", borderRadius: "15px", cursor: "pointer", fontSize: "0.9rem" }}>
-                  <input type="checkbox" checked={comicData.genres.includes(g._id)} onChange={e => {
-                    const selected = [...comicData.genres];
-                    if (e.target.checked) selected.push(g._id);
-                    else { const idx = selected.indexOf(g._id); if (idx > -1) selected.splice(idx, 1); }
-                    setComicData({ ...comicData, genres: selected });
-                  }} /> {g.name}
-                </label>
-              ))}
+          <div className="stat-card stat-orange">
+            <h3>Bộ truyện</h3>
+            <p>{stats.totalComics}</p>
+          </div>
+          <div className="stat-card stat-green">
+            <h3>Chương truyện</h3>
+            <p>{stats.totalChapters}</p>
+          </div>
+        </div>
+
+        <div className="admin-content-card">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <h2 style={{ margin: 0 }}>Quản lý truyện</h2>
+            <button className="btn-admin btn-add" onClick={() => { setShowAddForm(!showAddForm); setEditingComic(null); setComicData({title: "", author: "", description: "", coverImage: "", genres: []}); }}>
+              <i className="fas fa-plus"></i> {showAddForm ? "Đóng Form" : "Thêm truyện mới"}
+            </button>
+          </div>
+
+          {/* Form thêm/sửa */}
+          {showAddForm && (
+            <form onSubmit={handleSubmitComic} className="admin-form-group" style={{ background: "#f9f9f9", padding: "20px", borderRadius: "8px", marginBottom: "30px" }}>
+              <h3>{editingComic ? "Chỉnh sửa truyện" : "Thêm truyện mới"}</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+                <input className="admin-input" type="text" placeholder="Tiêu đề" required value={comicData.title} onChange={e => setComicData({...comicData, title: e.target.value})} />
+                <input className="admin-input" type="text" placeholder="Tác giả" required value={comicData.author} onChange={e => setComicData({...comicData, author: e.target.value})} />
+              </div>
+              <textarea className="admin-input" style={{ marginTop: "15px", minHeight: "100px" }} placeholder="Mô tả" required value={comicData.description} onChange={e => setComicData({...comicData, description: e.target.value})} />
+              <div style={{ marginTop: "15px" }}>
+                <label>Ảnh bìa: </label>
+                <input type="file" onChange={handleUploadCover} accept="image/*" />
+              </div>
+              <div style={{ marginTop: "15px" }}>
+                <label>Thể loại: </label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "10px" }}>
+                  {genres.map(g => (
+                    <label key={g._id} style={{ background: "#eee", padding: "5px 10px", borderRadius: "15px", cursor: "pointer", fontSize: "0.85rem" }}>
+                      <input type="checkbox" checked={comicData.genres.includes(g._id)} onChange={e => {
+                        const selected = [...comicData.genres];
+                        if (e.target.checked) selected.push(g._id);
+                        else { const idx = selected.indexOf(g._id); if (idx > -1) selected.splice(idx, 1); }
+                        setComicData({ ...comicData, genres: selected });
+                      }} /> {g.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <button type="submit" disabled={isUploading} className="btn-admin btn-add" style={{ marginTop: "20px", width: "100%", justifyContent: "center", padding: "12px" }}>
+                {isUploading ? "ĐANG XỬ LÝ..." : "LƯU TRUYỆN"}
+              </button>
+            </form>
+          )}
+
+          {/* Chi tiết truyện (Chương) */}
+          {selectedComic && (
+            <div style={{ background: "#eef2f7", padding: "20px", borderRadius: "10px", marginBottom: "30px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", gap: "15px" }}>
+                  <img src={selectedComic.coverImage} alt="" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px" }} />
+                  <div>
+                    <h3 style={{ margin: 0 }}>{selectedComic.title}</h3>
+                    <p style={{ margin: "5px 0" }}>{selectedComic.chapters?.length || 0} chương</p>
+                    <button className="btn-admin btn-add" onClick={() => setShowChapterForm(selectedComic._id)}>Thêm chương</button>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedComic(null)} style={{ border: "none", background: "none", fontSize: "1.5rem", cursor: "pointer" }}>&times;</button>
+              </div>
+              <div className="admin-list" style={{ marginTop: "20px" }}>
+                {selectedComic.chapters?.sort((a,b) => a.chapterNumber - b.chapterNumber).map(chap => (
+                  <div key={chap._id} className="admin-list-item" style={{ padding: "10px 15px", background: "#fff" }}>
+                    <span>Chương {chap.chapterNumber}: {chap.title}</span>
+                    <button className="btn-admin btn-delete" onClick={() => handleDeleteChapter(chap._id)}>Xóa</button>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-          <button type="submit" disabled={isUploading} style={{ padding: "15px", background: "#3498db", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
-            {isUploading ? "ĐANG XỬ LÝ..." : "LƯU TRUYỆN"}
-          </button>
-        </form>
-      )}
+          )}
 
-      {/* CHI TIẾT TRUYỆN */}
-      {selectedComic && (
-        <div style={{ background: "#fff", padding: "25px", borderRadius: "10px", border: "2px solid #3498db", marginBottom: "30px", position: "relative" }}>
-          <button onClick={() => setSelectedComic(null)} style={{ position: "absolute", top: "10px", right: "10px", border: "none", background: "none", fontSize: "1.5rem", cursor: "pointer" }}>&times;</button>
-          <div style={{ display: "flex", gap: "20px" }}>
-            <img src={selectedComic.coverImage} alt="" style={{ width: "120px", height: "160px", objectFit: "cover", borderRadius: "8px" }} />
-            <div>
-              <h2 style={{ margin: "0 0 10px 0" }}>{selectedComic.title}</h2>
-              <p><strong>Tác giả:</strong> {selectedComic.author}</p>
-              <button onClick={() => setShowChapterForm(selectedComic._id)} style={{ padding: "10px 20px", background: "#2ecc71", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>+ Thêm chương</button>
-            </div>
-          </div>
-          <h3 style={{ marginTop: "30px", borderTop: "1px solid #eee", paddingTop: "20px" }}>Danh sách chương</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "10px", marginTop: "15px" }}>
-            {selectedComic.chapters?.sort((a,b) => a.chapterNumber - b.chapterNumber).map(chap => (
-              <div key={chap._id} style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "6px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f9f9f9" }}>
-                <span>Chương {chap.chapterNumber}</span>
-                <button onClick={() => handleDeleteChapter(chap._id)} style={{ padding: "3px 8px", background: "#e74c3c", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>Xóa</button>
+          {/* Danh sách truyện dạng list dọc */}
+          <div className="admin-list">
+            {comics.map((comic) => (
+              <div key={comic._id} className="admin-list-item">
+                <div className="item-info">
+                  <img src={comic.coverImage} alt="" style={{ width: "45px", height: "60px", objectFit: "cover", borderRadius: "4px" }} />
+                  <div>
+                    <div className="item-title">{comic.title}</div>
+                    <div style={{ fontSize: "0.8rem", color: "#888" }}>{comic.author} • {comic.chapters?.length || 0} chương</div>
+                  </div>
+                </div>
+                <div className="item-actions">
+                  <button className="btn-admin btn-info" onClick={() => { setSelectedComic(comic); window.scrollTo(0,0); }}>
+                    <i className="fas fa-eye"></i> Xem
+                  </button>
+                  <button className="btn-admin btn-edit" onClick={() => handleEditComic(comic)}>
+                    <i className="fas fa-edit"></i> Sửa
+                  </button>
+                  <button className="btn-admin btn-delete" onClick={() => handleDeleteComic(comic._id)}>
+                    <i className="fas fa-trash"></i> Xóa
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      )}
+      </main>
 
-      {/* DANH SÁCH TRUYỆN */}
-      <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "8px", overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.1)" }}>
-        <thead>
-          <tr style={{ backgroundColor: "#f4f4f4", textAlign: "left" }}>
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Ảnh</th>
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Tên truyện</th>
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Tác giả</th>
-            <th style={{ padding: "15px", border: "1px solid #ddd", textAlign: "center" }}>Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          {comics.map((comic) => (
-            <tr key={comic._id} style={{ borderBottom: "1px solid #eee" }}>
-              <td style={{ padding: "10px", textAlign: "center", width: "80px" }}>
-                <img src={comic.coverImage} alt="" style={{ width: "50px", height: "70px", objectFit: "cover", borderRadius: "4px" }} />
-              </td>
-              <td 
-                style={{ padding: "15px", fontWeight: "bold", color: "#3498db", cursor: "pointer" }}
-                onClick={() => { setSelectedComic(comic); window.scrollTo(0, 0); }}
-              >
-                {comic.title} <span style={{ fontWeight: "normal", color: "#999", fontSize: "0.8rem" }}>({comic.chapters?.length || 0})</span>
-              </td>
-              <td style={{ padding: "15px" }}>{comic.author}</td>
-              <td style={{ padding: "15px", textAlign: "center" }}>
-                <button onClick={() => handleEditComic(comic)} style={{ marginRight: "10px", padding: "5px 12px", background: "#f39c12", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" }}>Sửa</button>
-                <button onClick={() => handleDeleteComic(comic._id)} style={{ color: "#fff", backgroundColor: "#e74c3c", border: "none", padding: "5px 12px", borderRadius: "4px", cursor: "pointer" }}>Xóa</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* MODAL THÊM CHƯƠNG */}
+      {/* Modal Thêm Chương */}
       {showChapterForm && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }}>
           <form onSubmit={handleCreateChapter} style={{ background: "#fff", padding: "30px", borderRadius: "10px", width: "450px", display: "grid", gap: "15px" }}>
             <h2>Thêm chương</h2>
-            <input type="number" required placeholder="Số chương" value={newChapter.chapterNumber} onChange={e => setNewChapter({...newChapter, chapterNumber: e.target.value})} style={{ padding: "10px" }} />
-            <input type="text" placeholder="Tiêu đề (không bắt buộc)" value={newChapter.title} onChange={e => setNewChapter({...newChapter, title: e.target.value})} style={{ padding: "10px" }} />
-            <input type="file" multiple accept="image/*" required onChange={e => setNewChapter({...newChapter, files: e.target.files})} style={{ padding: "10px" }} />
+            <input className="admin-input" type="number" required placeholder="Số chương" value={newChapter.chapterNumber} onChange={e => setNewChapter({...newChapter, chapterNumber: e.target.value})} />
+            <input className="admin-input" type="text" placeholder="Tiêu đề (không bắt buộc)" value={newChapter.title} onChange={e => setNewChapter({...newChapter, title: e.target.value})} />
+            <input type="file" multiple accept="image/*" required onChange={e => setNewChapter({...newChapter, files: e.target.files})} />
             <div style={{ display: "flex", gap: "10px" }}>
-              <button type="submit" disabled={isUploading} style={{ flex: 1, padding: "12px", background: "#27ae60", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>{isUploading ? "ĐANG LƯU..." : "LƯU CHƯƠNG"}</button>
-              <button type="button" onClick={() => setShowChapterForm(null)} style={{ flex: 1, padding: "12px", background: "#e74c3c", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}>HỦY</button>
+              <button type="submit" disabled={isUploading} className="btn-admin btn-add" style={{ flex: 1, justifyContent: "center" }}>{isUploading ? "ĐANG LƯU..." : "LƯU CHƯƠNG"}</button>
+              <button type="button" onClick={() => setShowChapterForm(null)} className="btn-admin btn-delete" style={{ flex: 1, justifyContent: "center" }}>HỦY</button>
             </div>
           </form>
         </div>

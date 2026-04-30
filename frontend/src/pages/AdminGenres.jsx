@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import API from "../services/api";
+import "../styles/admin.css";
 
 function AdminGenres() {
   const [genres, setGenres] = useState([]);
+  const [stats, setStats] = useState({ totalUsers: 0, totalComics: 0, totalChapters: 0 });
   const [newGenre, setNewGenre] = useState({ name: "", description: "" });
   const [editingGenre, setEditingGenre] = useState(null);
-  const navigate = useNavigate();
+  const [showAddForm, setShowAddForm] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     fetchGenres();
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const res = await API.get("/admin/stats");
+      setStats(res.data);
+    } catch (err) { console.error(err); }
+  };
 
   const fetchGenres = async () => {
     try {
@@ -36,6 +47,8 @@ function AdminGenres() {
       }
       setNewGenre({ name: "", description: "" });
       setEditingGenre(null);
+      setShowAddForm(false);
+      fetchStats();
     } catch (err) {
       alert("Lỗi khi xử lý!");
     }
@@ -44,7 +57,7 @@ function AdminGenres() {
   const handleEdit = (genre) => {
     setEditingGenre(genre);
     setNewGenre({ name: genre.name, description: genre.description || "" });
-    window.scrollTo(0, 0);
+    setShowAddForm(true);
   };
 
   const handleDelete = async (id) => {
@@ -52,6 +65,7 @@ function AdminGenres() {
       try {
         await API.delete(`/genres/${id}`);
         setGenres(genres.filter((g) => g._id !== id));
+        fetchStats();
         alert("Xóa thành công!");
       } catch (err) {
         alert("Lỗi khi xóa!");
@@ -60,76 +74,108 @@ function AdminGenres() {
   };
 
   return (
-    <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
-      <button 
-        onClick={() => navigate("/admin")} 
-        style={{ marginBottom: "20px", padding: "10px 15px", background: "#eee", border: "none", borderRadius: "5px", cursor: "pointer", fontSize: "1.2rem" }}
-        title="Quay lại"
-      >
-        ←
-      </button>
+    <div className="admin-layout">
+      {/* Sidebar */}
+      <aside className="admin-sidebar">
+        <div className="sidebar-brand">ADMIN PANEL</div>
+        <nav className="sidebar-nav">
+          <Link to="/admin" className="sidebar-link">
+            <i className="fas fa-chart-line"></i> Tổng quan
+          </Link>
+          <Link to="/admin/comics" className="sidebar-link">
+            <i className="fas fa-book"></i> Quản lý truyện
+          </Link>
+          <Link to="/admin/users" className="sidebar-link">
+            <i className="fas fa-users"></i> Quản lý người dùng
+          </Link>
+          <Link to="/admin/genres" className={`sidebar-link ${location.pathname === "/admin/genres" ? "active" : ""}`}>
+            <i className="fas fa-tags"></i> Quản lý thể loại
+          </Link>
+          <Link to="/" className="sidebar-link" style={{ marginTop: "auto", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+            <i className="fas fa-home"></i> Quay lại Web
+          </Link>
+        </nav>
+      </aside>
 
-      <h1>Quản lý thể loại</h1>
-      
-      <form onSubmit={handleAddOrUpdate} style={{ marginBottom: "30px", display: "flex", flexDirection: "column", gap: "10px", background: "#fff", padding: "20px", borderRadius: "8px", border: "1px solid #ddd" }}>
-        <h3>{editingGenre ? "Sửa thể loại" : "Thêm thể loại mới"}</h3>
-        <input 
-          type="text" 
-          placeholder="Tên thể loại..." 
-          value={newGenre.name}
-          onChange={(e) => setNewGenre({...newGenre, name: e.target.value})}
-          style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }}
-          required
-        />
-        <textarea 
-          placeholder="Mô tả thể loại..." 
-          value={newGenre.description}
-          onChange={(e) => setNewGenre({...newGenre, description: e.target.value})}
-          style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ddd", minHeight: "80px" }}
-        />
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button type="submit" style={{ flex: 1, padding: "10px", backgroundColor: "#27ae60", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
-            {editingGenre ? "Cập nhật" : "Lưu thể loại"}
-          </button>
-          {editingGenre && (
-            <button type="button" onClick={() => { setEditingGenre(null); setNewGenre({ name: "", description: "" }); }} style={{ flex: 1, padding: "10px", backgroundColor: "#7f8c8d", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}>
-              Hủy
-            </button>
-          )}
+      {/* Main Content */}
+      <main className="admin-main">
+        {/* Stats */}
+        <div className="admin-stats-overview">
+          <div className="stat-card stat-blue">
+            <h3>Người dùng</h3>
+            <p>{stats.totalUsers}</p>
+          </div>
+          <div className="stat-card stat-orange">
+            <h3>Bộ truyện</h3>
+            <p>{stats.totalComics}</p>
+          </div>
+          <div className="stat-card stat-green">
+            <h3>Chương truyện</h3>
+            <p>{stats.totalChapters}</p>
+          </div>
         </div>
-      </form>
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ backgroundColor: "#f4f4f4" }}>
-            <th style={{ padding: "12px", border: "1px solid #ddd", textAlign: "left" }}>Tên thể loại</th>
-            <th style={{ padding: "12px", border: "1px solid #ddd", textAlign: "left" }}>Mô tả</th>
-            <th style={{ padding: "12px", border: "1px solid #ddd", width: "150px" }}>Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          {genres.map((genre) => (
-            <tr key={genre._id}>
-              <td style={{ padding: "12px", border: "1px solid #ddd", fontWeight: "bold" }}>{genre.name}</td>
-              <td style={{ padding: "12px", border: "1px solid #ddd", color: "#666" }}>{genre.description || "Không có mô tả"}</td>
-              <td style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center" }}>
-                <button 
-                  onClick={() => handleEdit(genre)}
-                  style={{ marginRight: "10px", color: "#fff", backgroundColor: "#f39c12", border: "none", padding: "5px 10px", borderRadius: "3px", cursor: "pointer" }}
-                >
-                  Sửa
+        <div className="admin-content-card">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <h2 style={{ margin: 0 }}>Quản lý thể loại</h2>
+            <button className="btn-admin btn-add" onClick={() => { setShowAddForm(!showAddForm); setEditingGenre(null); setNewGenre({name:"", description:""}); }}>
+              <i className="fas fa-plus"></i> {showAddForm ? "Đóng Form" : "Thêm thể loại"}
+            </button>
+          </div>
+
+          {showAddForm && (
+            <form onSubmit={handleAddOrUpdate} className="admin-form-group" style={{ background: "#f9f9f9", padding: "20px", borderRadius: "8px", marginBottom: "30px" }}>
+              <h3>{editingGenre ? "Sửa thể loại" : "Thêm thể loại mới"}</h3>
+              <input 
+                className="admin-input"
+                type="text" 
+                placeholder="Tên thể loại..." 
+                value={newGenre.name}
+                onChange={(e) => setNewGenre({...newGenre, name: e.target.value})}
+                required
+              />
+              <textarea 
+                className="admin-input"
+                style={{ marginTop: "15px", minHeight: "80px" }}
+                placeholder="Mô tả thể loại..." 
+                value={newGenre.description}
+                onChange={(e) => setNewGenre({...newGenre, description: e.target.value})}
+              />
+              <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                <button type="submit" className="btn-admin btn-add" style={{ flex: 1, justifyContent: "center", padding: "12px" }}>
+                  {editingGenre ? "CẬP NHẬT" : "LƯU THỂ LOẠI"}
                 </button>
-                <button 
-                  onClick={() => handleDelete(genre._id)}
-                  style={{ color: "#fff", backgroundColor: "#e74c3c", border: "none", padding: "5px 10px", borderRadius: "3px", cursor: "pointer" }}
-                >
-                  Xóa
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                {editingGenre && (
+                  <button type="button" className="btn-admin btn-delete" onClick={() => { setEditingGenre(null); setShowAddForm(false); }} style={{ flex: 1, justifyContent: "center" }}>
+                    HỦY
+                  </button>
+                )}
+              </div>
+            </form>
+          )}
+
+          <div className="admin-list">
+            {genres.map((genre) => (
+              <div key={genre._id} className="admin-list-item">
+                <div className="item-info">
+                  <div>
+                    <div className="item-title">{genre.name}</div>
+                    <div style={{ fontSize: "0.85rem", color: "#888" }}>{genre.description || "Không có mô tả"}</div>
+                  </div>
+                </div>
+                <div className="item-actions">
+                  <button className="btn-admin btn-edit" onClick={() => handleEdit(genre)}>
+                    <i className="fas fa-edit"></i> Sửa
+                  </button>
+                  <button className="btn-admin btn-delete" onClick={() => handleDelete(genre._id)}>
+                    <i className="fas fa-trash"></i> Xóa
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

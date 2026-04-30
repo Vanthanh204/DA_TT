@@ -122,20 +122,30 @@ function AdminComics() {
     setIsUploading(true);
     try {
       const files = Array.from(newChapter.files);
+      const allImageUrls = [];
+      const batchSize = 5; // Upload mỗi đợt 5 ảnh để tránh nghẽn mạng
       
-      // TĂNG TỐC: Upload song song tất cả các ảnh cùng lúc thay vì gửi từng chunk
-      // Chúng ta sử dụng route /upload/comic-cover (upload đơn) để tận dụng tối đa băng thông
-      const uploadPromises = files.map(async (file) => {
-        const formData = new FormData();
-        formData.append("image", file);
-        const res = await API.post("/upload/comic-cover", formData, {
-          headers: { "Content-Type": "multipart/form-data" }
-        });
-        return res.data.imageUrl;
-      });
+      console.log(`Bắt đầu upload ${files.length} ảnh...`);
 
-      // Đợi tất cả các ảnh upload xong
-      const allImageUrls = await Promise.all(uploadPromises);
+      for (let i = 0; i < files.length; i += batchSize) {
+        const batch = files.slice(i, i + batchSize);
+        console.log(`Đang upload đợt ${Math.floor(i/batchSize) + 1}...`);
+        
+        const uploadPromises = batch.map(async (file) => {
+          const formData = new FormData();
+          formData.append("image", file);
+          // Tăng timeout lên 3 phút cho mỗi request ảnh
+          const res = await API.post("/upload/comic-cover", formData, {
+            timeout: 180000 
+          });
+          return res.data.imageUrl;
+        });
+
+        const batchResults = await Promise.all(uploadPromises);
+        allImageUrls.push(...batchResults);
+      }
+
+      console.log("Tất cả ảnh đã upload thành công, đang tạo chương...");
 
       // Sau khi có đầy đủ link ảnh, mới tạo chương
       await API.post("/upload/create-chapter", {
@@ -151,8 +161,12 @@ function AdminComics() {
       fetchComics();
       fetchStats();
     } catch (err) {
-      console.error("Lỗi khi tạo chương:", err);
-      alert("Lỗi khi up chương: " + (err.response?.data?.message || err.message));
+      console.error("Lỗi chi tiết:", err);
+      if (err.code === 'ECONNABORTED') {
+        alert("Lỗi: Thời gian upload quá lâu (Timeout). Hãy thử lại hoặc kiểm tra mạng.");
+      } else {
+        alert("Lỗi khi up chương: " + (err.response?.data?.message || err.message));
+      }
     } finally {
       setIsUploading(false);
     }

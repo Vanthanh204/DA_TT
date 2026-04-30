@@ -232,8 +232,11 @@ function Profile({ user: propUser, setUser: setGlobalUser }) {
           )}
         </div>
       </div>
+    </div>
+  );
+}
 
-      <style dangerouslySetInnerHTML={{ __html: `
+export default Profile;e dangerouslySetInnerHTML={{ __html: `
         .profile-page-container {
           padding: 20px;
           max-width: 800px;

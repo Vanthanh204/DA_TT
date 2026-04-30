@@ -251,6 +251,35 @@
 
 .user-info { display: flex; align-items: center; gap: 15px; }
 
+.nav-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3498db;
+  transition: transform 0.2s;
+}
+
+.nav-avatar:hover {
+  transform: scale(1.1);
+}
+
+.btn-logout {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-logout:hover {
+  background: #c0392b;
+}
+
 .auth-links { 
   display: flex; 
   align-items: center; 

@@ -173,19 +173,6 @@ function AdminComics() {
       setIsUploading(false);
     }
   };
-      fetchComics();
-      fetchStats();
-    } catch (err) {
-      console.error("Lỗi chi tiết:", err);
-      if (err.code === 'ECONNABORTED') {
-        alert("Lỗi: Thời gian upload quá lâu (Timeout). Hãy thử lại hoặc kiểm tra mạng.");
-      } else {
-        alert("Lỗi khi up chương: " + (err.response?.data?.message || err.message));
-      }
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   const handleDeleteChapter = async (chapterId) => {
     if (window.confirm("Xóa chương này?")) {

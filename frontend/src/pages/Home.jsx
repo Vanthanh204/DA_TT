@@ -69,14 +69,7 @@ function Home() {
               </div>
               <div className="comic-grid">
                 {favorites.map((c) => (
-                  <ComicCard 
-                    key={c._id} 
-                    comic={{
-                      ...c,
-                      image: c.coverImage,
-                      chapter: c.chapters?.length || 0
-                    }} 
-                  />
+                  <ComicCard key={c._id} comic={c} />
                 ))}
               </div>
               <hr style={{border: "none", borderBottom: "1px solid #eee", margin: "30px 0"}} />
@@ -90,14 +83,7 @@ function Home() {
           <div className="comic-grid">
             {comics.length > 0 ? (
               comics.map((c) => (
-                <ComicCard 
-                  key={c._id} 
-                  comic={{
-                    ...c,
-                    image: c.coverImage,
-                    chapter: c.chapters?.length || 0
-                  }} 
-                />
+                <ComicCard key={c._id} comic={c} />
               ))
             ) : (
               <p style={{ padding: "20px", color: "#666" }}>Chưa có truyện nào trong hệ thống.</p>

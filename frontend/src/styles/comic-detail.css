@@ -256,6 +256,9 @@
   margin: 0;
   line-height: 1.5;
   color: #34495e;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .no-comments {

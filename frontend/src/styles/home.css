@@ -4,21 +4,23 @@
   padding: 0;
 }
 
+/* BANNER NÂNG CẤP VỚI ĐỘ TƯƠNG PHẢN CAO */
 .banner {
   position: relative;
-  height: 400px;
+  height: 420px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   color: #fff;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-  margin-bottom: 2rem;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+  margin-bottom: 2.5rem;
   overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
-/* Tạo lớp nền cho slideshow */
+/* Slideshow nền */
 .banner::before {
   content: "";
   position: absolute;
@@ -26,66 +28,105 @@
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: -2;
   background-size: cover;
   background-position: center;
+  animation: bannerSlideshow 24s infinite ease-in-out;
+  /* Giảm độ sáng trực tiếp của ảnh gốc */
+  filter: brightness(0.7);
+}
+
+/* Lớp phủ Gradient Tối (Bảo vệ văn bản khỏi ảnh sáng) */
+.banner::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   z-index: -1;
-  animation: bannerSlideshow 20s infinite;
-  filter: brightness(0.5);
+  /* Phủ lớp đen mờ dần từ hai bên và ở giữa */
+  background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.7) 100%);
 }
 
 @keyframes bannerSlideshow {
   0%, 20% {
-    background-image: url('https://images.unsplash.com/photo-1578632738980-4204f7261d79?q=80&w=2070');
+    /* Ảnh 1: Thư viện manga tối */
+    background-image: url('https://images.unsplash.com/photo-1580136608260-4eb11f4bc246?q=80&w=2000');
+    transform: scale(1);
   }
   25%, 45% {
-    background-image: url('https://images.unsplash.com/photo-1541562232579-512a21360020?q=80&w=2000');
+    /* Ảnh 2: Không gian đọc truyện chill */
+    background-image: url('https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=2000');
+    transform: scale(1.05);
   }
   50%, 70% {
-    background-image: url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2000');
+    /* Ảnh 3: Cảnh anime đêm huyền ảo */
+    background-image: url('https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=2000');
+    transform: scale(1);
   }
   75%, 95% {
-    background-image: url('https://images.unsplash.com/photo-1607604276483-4efdd6d4adbb?q=80&w=2000');
+    /* Ảnh 4: Art manga phong cách */
+    background-image: url('https://images.unsplash.com/photo-1601850494422-3cf14624b0bb?q=80&w=2000');
+    transform: scale(1.05);
   }
   100% {
-    background-image: url('https://images.unsplash.com/photo-1578632738980-4204f7261d79?q=80&w=2070');
+    background-image: url('https://images.unsplash.com/photo-1580136608260-4eb11f4bc246?q=80&w=2000');
+    transform: scale(1);
   }
 }
 
 .banner-content {
   position: relative;
   z-index: 1;
+  max-width: 800px;
+  padding: 0 20px;
 }
 
 .banner-content h1 {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  font-size: 3.2rem;
+  margin-bottom: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  /* Thêm bóng đổ mạnh cho chữ */
+  text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+}
+
+.banner-content h1 span {
+  color: var(--primary-color);
 }
 
 .banner-content p {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
+  font-size: 1.25rem;
+  margin-bottom: 2.2rem;
+  font-weight: 500;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+  opacity: 0.95;
 }
 
 .btn-explore {
-  padding: 0.8rem 2.5rem;
-  font-size: 1.1rem;
-  background-color: #e94560;
+  padding: 0.9rem 2.8rem;
+  font-size: 1.05rem;
+  background: var(--primary-color);
   color: #fff;
   border: none;
-  border-radius: 30px;
+  border-radius: 50px;
   cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s;
-  box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
 }
 
 .btn-explore:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(233, 69, 96, 0.6);
+  background: #ff5e78;
+  box-shadow: 0 8px 25px rgba(233, 69, 96, 0.6);
 }
 
+/* PHẦN CÒN LẠI */
 .main-content {
   display: flex;
   gap: 2rem;

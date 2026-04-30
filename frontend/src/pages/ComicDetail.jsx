@@ -221,7 +221,7 @@ function ComicDetail() {
                   onClick={() => handleRead(chap._id, chap.chapterNumber)}
                 >
                   <div className="chapter-name">
-                    Chương {chap.chapterNumber}: {chap.title || `Chapter ${chap.chapterNumber}`}
+                    Chương {chap.chapterNumber}{chap.title ? `: ${chap.title}` : ""}
                     {isLocked && <i className="fas fa-lock" style={{ marginLeft: "10px", color: "#e74c3c" }}></i>}
                   </div>
                   <div className="chapter-time">{formatTime(chap.createdAt)}</div>

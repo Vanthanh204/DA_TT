@@ -21,4 +21,20 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// Xử lý lỗi Token tự động
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      if (error.response.data === "Token không hợp lệ!" || error.response.data.message === "Token không hợp lệ!") {
+        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default API;

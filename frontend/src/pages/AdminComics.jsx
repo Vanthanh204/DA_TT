@@ -118,33 +118,41 @@ function AdminComics() {
   const handleCreateChapter = async (e) => {
     e.preventDefault();
     if (newChapter.files.length === 0) return alert("Chọn ảnh!");
+    
     setIsUploading(true);
     try {
       const files = Array.from(newChapter.files);
-      const chunkSize = 15;
-      let allImageUrls = [];
-      for (let i = 0; i < files.length; i += chunkSize) {
-        const chunk = files.slice(i, i + chunkSize);
+      
+      // TĂNG TỐC: Upload song song tất cả các ảnh cùng lúc thay vì gửi từng chunk
+      // Chúng ta sử dụng route /upload/comic-cover (upload đơn) để tận dụng tối đa băng thông
+      const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
-        chunk.forEach(file => formData.append("images", file));
-        const res = await API.post("/upload/chapter-pages", formData, {
+        formData.append("image", file);
+        const res = await API.post("/upload/comic-cover", formData, {
           headers: { "Content-Type": "multipart/form-data" }
         });
-        allImageUrls = [...allImageUrls, ...res.data.imageUrls];
-      }
+        return res.data.imageUrl;
+      });
+
+      // Đợi tất cả các ảnh upload xong
+      const allImageUrls = await Promise.all(uploadPromises);
+
+      // Sau khi có đầy đủ link ảnh, mới tạo chương
       await API.post("/upload/create-chapter", {
         comicId: showChapterForm,
         chapterNumber: Number(newChapter.chapterNumber),
         title: newChapter.title,
         pages: allImageUrls
       });
+
       alert("Thêm chương thành công!");
       setShowChapterForm(null);
       setNewChapter({ chapterNumber: 1, title: "", files: [] });
       fetchComics();
       fetchStats();
     } catch (err) {
-      alert("Lỗi!");
+      console.error("Lỗi khi tạo chương:", err);
+      alert("Lỗi khi up chương: " + (err.response?.data?.message || err.message));
     } finally {
       setIsUploading(false);
     }

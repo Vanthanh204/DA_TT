@@ -1,0 +1,45 @@
+1. Yêu cầu hệ thống
+Trước khi bắt đầu, cần đảm bảo máy tính đã cài đặt đầy đủ các công cụ sau:
+Node.js (phiên bản 18 trở lên)
+npm (được cài kèm với Node.js)
+MongoDB:
+MongoDB Atlas (cloud) hoặc
+MongoDB Community Server (cài local)
+Cloudinary Account (dùng để lưu trữ hình ảnh truyện)
+
+2. Cấu trúc dự án
+Dự án được chia thành hai phần chính:
+backend/:
+Chứa mã nguồn server (API), xử lý logic và kết nối cơ sở dữ liệu
+frontend/:
+Chứa mã nguồn giao diện người dùng, được xây dựng bằng React
+3. Các bước cài đặt
+Bước 1: Cài đặt Backend
+Mở terminal và di chuyển vào thư mục backend: cd backend
+Cài đặt các thư viện cần thiết: npm install
+Cấu hình biến môi trường:
+Tạo file .env từ .env.example
+Cập nhật các thông tin cấu hình:
+PORT=5000
+MONGO_URI=mongodb+srv://<user>:<password>@cluster0.mongodb.net/comics_db
+JWT_SECRET=your_secret_key
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+Bước 2: Khởi tạo dữ liệu mẫu (Seeding Data)
+Dự án cung cấp sẵn file seed.js để tạo dữ liệu truyện mẫu.
+Chạy lệnh: node seed.js
+Lưu ý:Lệnh này sẽ xóa dữ liệu cũ trong database trước khi tạo dữ liệu mới.
+
+Bước 3: Cài đặt Frontend
+Di chuyển sang thư mục frontend: cd ../frontend
+Cài đặt thư viện: npm install
+Cấu hình file .env cho frontend:
+VITE_API_URL=http://localhost:5000/api
+
+4. Khởi chạy ứng dụng
+Chạy Backend
+Trong thư mục backend: npm run dev
+Chạy Frontend
+Trong thư mục frontend: npm run dev

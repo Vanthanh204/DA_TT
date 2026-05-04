@@ -71,7 +71,8 @@ const UserSchema = new mongoose.Schema({
       readAt: { type: Date, default: Date.now }
     }
   ],
-  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comic" }]
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comic" }],
+  dismissedAnnouncements: [{ type: mongoose.Schema.Types.ObjectId, ref: "Announcement" }]
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", UserSchema);
